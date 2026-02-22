@@ -1,0 +1,23 @@
+# IntelliJ
+.idea/
+*.iml
+out/
+*.class
+
+# Maven
+target/
+.mvn/
+
+# JavaFX SDK local (no subas la carpeta del SDK)
+SDKJavaFX/
+javafx-sdk-*/
+
+# Bases de datos y credenciales (¡nunca!)
+*.secret
+application.properties
+src/main/resources/*.secret
+
+# Temporales
+*.log
+.DS_Store
+Thumbs.db
