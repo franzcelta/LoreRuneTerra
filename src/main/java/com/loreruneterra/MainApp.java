@@ -6,12 +6,15 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -24,7 +27,7 @@ import java.util.List;
 
 public class MainApp extends Application {
 
-    private ObservableList<Campeon> campeonesList = FXCollections.observableArrayList();
+    private final ObservableList<Campeon> campeonesList = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage primaryStage) {
@@ -34,11 +37,26 @@ public class MainApp extends Application {
         // Layout principal
         BorderPane root = new BorderPane();
 
+        // Panel superior: título + campo de búsqueda
+        VBox topBox = new VBox(10);
+        topBox.setPadding(new javafx.geometry.Insets(10));
+
+        Label tituloApp = new Label("LoreRuneTerra - Campeones de Runeterra");
+        tituloApp.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+
+        TextField searchField = new TextField();
+        searchField.setPromptText("Buscar por nombre...");
+        searchField.setMaxWidth(400);
+        searchField.setStyle("-fx-font-size: 14px;");
+
+        topBox.getChildren().addAll(tituloApp, searchField);
+        root.setTop(topBox);
+
         // Tabla de campeones
         TableView<Campeon> table = new TableView<>();
         table.setItems(campeonesList);
 
-        // Columnas
+        // Columna Imagen
         TableColumn<Campeon, String> colImagen = new TableColumn<>("Imagen");
         colImagen.setPrefWidth(80);
         colImagen.setCellFactory(param -> new TableCell<Campeon, String>() {
@@ -54,16 +72,13 @@ public class MainApp extends Application {
                 }
 
                 try {
-                    // Limpia prefijo file:/// si existe
                     String rutaLimpia = url.replace("file:///", "");
                     File file = new File(rutaLimpia);
 
                     if (file.exists() && file.canRead()) {
-                        // Carga desde URI (la forma más fiable para locales en Windows)
                         imageView.setImage(new Image(file.toURI().toString()));
-                        System.out.println("Imagen cargada OK: " + rutaLimpia);
                     } else {
-                        System.out.println("Archivo NO encontrado o no legible: " + rutaLimpia);
+                        System.out.println("Imagen no encontrada: " + rutaLimpia);
                         imageView.setImage(null);
                     }
 
@@ -73,8 +88,7 @@ public class MainApp extends Application {
                     imageView.setSmooth(true);
 
                 } catch (Exception e) {
-                    System.err.println("Error: " + e.getMessage());
-                    // e.printStackTrace();  // comentado - warning de IntelliJ
+                    System.err.println("Error al cargar imagen: " + url);
                     imageView.setImage(null);
                 }
 
@@ -83,29 +97,46 @@ public class MainApp extends Application {
         });
         colImagen.setCellValueFactory(new PropertyValueFactory<>("imagen"));
 
+        // Columna Nombre
         TableColumn<Campeon, String> colNombre = new TableColumn<>("Nombre");
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
 
+        // Columna Título
         TableColumn<Campeon, String> colTitulo = new TableColumn<>("Título");
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
 
+        // Columna Key
         TableColumn<Campeon, String> colKey = new TableColumn<>("Key");
         colKey.setCellValueFactory(new PropertyValueFactory<>("key"));
 
-        // Agregar columnas (imagen primero para que destaque)
         table.getColumns().addAll(colImagen, colNombre, colTitulo, colKey);
 
         // Ajustes de la tabla
         table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("Cargando campeones... o no hay datos aún"));
-        table.setFixedCellSize(70);  // Altura fija de fila para que quepan bien las imágenes
+        table.setFixedCellSize(70);
 
         root.setCenter(table);
 
-        // Barra superior
-        Label tituloApp = new Label("LoreRuneTerra - Campeones de Runeterra");
-        tituloApp.setStyle("-fx-font-size: 20px; -fx-padding: 10;");
-        root.setTop(tituloApp);
+        // Filtro de búsqueda en tiempo real
+        FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(campeon -> {
+                if (newValue == null || newValue.trim().isEmpty()) {
+                    return true;
+                }
+
+                String lowerCaseFilter = newValue.toLowerCase();
+                return campeon.getNombre().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
+
+        // Ordena la lista filtrada (mantiene el orden de la tabla)
+        SortedList<Campeon> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(table.comparatorProperty());
+
+        table.setItems(sortedData);
 
         // Escena y stage
         Scene scene = new Scene(root, 1100, 700);
@@ -114,7 +145,7 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
-    // Clase interna Campeon (modelo)
+    // Clase Campeon (modelo)
     @SuppressWarnings("unused")
     public static class Campeon {
         private final StringProperty key = new SimpleStringProperty();
@@ -142,7 +173,7 @@ public class MainApp extends Application {
         public StringProperty imagenProperty() { return imagen; }
     }
 
-    // Cargar desde BD
+    // Cargar campeones desde BD
     private void cargarCampeonesDesdeBD() {
         List<Campeon> lista = new ArrayList<>();
 
@@ -165,8 +196,7 @@ public class MainApp extends Application {
             System.out.println("Campeones cargados desde BD: " + lista.size());
 
         } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-            // e.printStackTrace();  // comentado - warning de IntelliJ
+            System.err.println("Error al cargar campeones: " + e.getMessage());
         }
     }
 

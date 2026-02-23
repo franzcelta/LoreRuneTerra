@@ -13,9 +13,8 @@ import java.sql.SQLException;
 
 public class DataDragonImporter {
 
-    // ¡Cambia esta ruta a la tuya exacta!
+    // Ruta exacta del Json de campeones
     private static final String JSON_PATH = "C:\\Users\\franz\\Documents\\LoreRuneTerra ASSETS\\16.3.1\\data\\es_ES\\champion.json";
-    // Si es championFull.json o está en otra subcarpeta, cámbialo aquí
 
     public static void main(String[] args) {
         importChampions();
@@ -54,10 +53,10 @@ public class DataDragonImporter {
                     String nombre = champ.get("name").getAsString();
                     String titulo = champ.get("title").getAsString();
 
-                    // Region: en champion.json no viene directamente, puedes dejar null o mapear manualmente
-                    String region = null; // ← puedes mejorarlo después (ej. de tags o manual)
+                    // Region: en champion.json no viene directamente, podemos dejar null o mapear manualmente
+                    String region = null; // ← aquí podemos mejorarlo después (ej. de tags o manual)
 
-                    // Imagen: URL típica de DataDragon (ajusta versión si es necesario)
+                    // Imagen: URL típica de DataDragon (ajustar versión si es necesario)
                     String imagen = "https://ddragon.leagueoflegends.com/cdn/15.3.1/img/champion/" + champ.get("image").getAsJsonObject().get("full").getAsString();
 
                     ps.setString(1, key);           // ej: "Aatrox"

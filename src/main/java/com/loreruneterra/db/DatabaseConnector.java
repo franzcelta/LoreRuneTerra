@@ -7,8 +7,8 @@ import java.sql.SQLException;
 public class DatabaseConnector {
 
     private static final String URL = "jdbc:postgresql://localhost:5432/loreruneterra";
-    private static final String USER = "postgres";      // CAMBIA SI USAS OTRO USUARIO
-    private static final String PASSWORD = "0031";  // ¡Cambia esto!
+    private static final String USER = "postgres";      // usuario habitual
+    private static final String PASSWORD = "0031";  // contraña habitual
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
