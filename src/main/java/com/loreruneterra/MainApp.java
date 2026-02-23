@@ -219,9 +219,9 @@ public class MainApp extends Application {
 
         // Botones
         btnEditarBio.setOnAction(e -> {
-            txtBiografia.setEditable(true);
-            btnEditarBio.setVisible(false);
-            btnGuardarBio.setVisible(true);
+            if (campeonSeleccionado != null) {
+                abrirEditorLore(campeonSeleccionado);
+            }
         });
 
         btnGuardarBio.setOnAction(e -> {
@@ -288,13 +288,68 @@ public class MainApp extends Application {
         campeonSeleccionado = null;
     }
 
-    // Métodos de biografía (placeholders por ahora)
-    private void cargarBiografia(String keyCampeon) {
-        // Implementar cuando agreguemos la carga real desde BD
+    private void abrirEditorLore(Campeon campeon) {
+        if (campeon == null) return;
+
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Editar Biografía - " + campeon.getNombre());
+        dialog.setHeaderText("Pega la biografía completa y la historia corta desde Universe");
+
+        TextArea textArea = new TextArea(txtBiografia.getText());
+        textArea.setWrapText(true);
+        textArea.setPrefHeight(400);
+        textArea.setPrefWidth(600);
+
+        dialog.getDialogPane().setContent(textArea);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return textArea.getText();
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(nuevoTexto -> {
+            if (nuevoTexto != null && !nuevoTexto.trim().isEmpty()) {
+                guardarBiografia(campeon.getKey(), nuevoTexto);
+                mostrarDetalles(campeon);  // refresca la vista
+            }
+        });
     }
 
-    private void guardarBiografia(String keyCampeon, String textoBio) {
-        // Implementar cuando agreguemos la BD real
+    private void guardarBiografia(String keyCampeon, String texto) {
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            PreparedStatement psId = conn.prepareStatement("SELECT id FROM campeones WHERE key = ?");
+            psId.setString(1, keyCampeon);
+            ResultSet rs = psId.executeQuery();
+            if (!rs.next()) {
+                System.err.println("Campeón no encontrado: " + keyCampeon);
+                return;
+            }
+            int campeonId = rs.getInt("id");
+
+            PreparedStatement ps = conn.prepareStatement("""
+                INSERT INTO biografias (campeon_id, biografia_completa, ultima_actualizacion)
+                VALUES (?, ?, CURRENT_DATE)
+                ON CONFLICT (campeon_id) DO UPDATE SET
+                    biografia_completa = EXCLUDED.biografia_completa,
+                    ultima_actualizacion = CURRENT_DATE
+                """);
+            ps.setInt(1, campeonId);
+            ps.setString(2, texto);
+            ps.executeUpdate();
+
+            System.out.println("Biografía guardada para " + keyCampeon);
+            txtBiografia.setText(texto);
+        } catch (SQLException e) {
+            System.err.println("Error guardando biografía: " + e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("No se pudo guardar la biografía");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
     }
 
     private void cargarCampeonesDesdeBD() {
