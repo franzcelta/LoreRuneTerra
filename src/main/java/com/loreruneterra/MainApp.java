@@ -8,13 +8,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -29,17 +29,24 @@ public class MainApp extends Application {
 
     private final ObservableList<Campeon> campeonesList = FXCollections.observableArrayList();
 
+    // Panel de detalles (inicialmente oculto)
+    private final VBox detallesPanel = new VBox(10);
+    private final Label lblNombreDetalles = new Label();
+    private final Label lblTituloDetalles = new Label();
+    private final ImageView imgPrincipalDetalles = new ImageView();
+    private final ImageView imgSplashDetalles = new ImageView();
+    private final TextArea txtBiografia = new TextArea("Biografía no disponible aún. Próximamente desde Universe.");
+    private final Button btnCerrarDetalles = new Button("Cerrar detalles");
+
     @Override
     public void start(Stage primaryStage) {
-        // Cargar campeones desde BD
         cargarCampeonesDesdeBD();
 
-        // Layout principal
         BorderPane root = new BorderPane();
 
-        // Panel superior: título + campo de búsqueda
+        // Panel superior: título + búsqueda
         VBox topBox = new VBox(10);
-        topBox.setPadding(new javafx.geometry.Insets(10));
+        topBox.setPadding(new Insets(10));
 
         Label tituloApp = new Label("LoreRuneTerra - Campeones de Runeterra");
         tituloApp.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
@@ -52,11 +59,15 @@ public class MainApp extends Application {
         topBox.getChildren().addAll(tituloApp, searchField);
         root.setTop(topBox);
 
-        // Tabla de campeones
+        // SplitPane para dividir tabla y detalles
+        SplitPane splitPane = new SplitPane();
+        splitPane.setDividerPositions(0.6); // 60% tabla, 40% detalles
+
+        // Tabla de campeones (izquierda)
         TableView<Campeon> table = new TableView<>();
         table.setItems(campeonesList);
 
-        // Columna Imagen
+        // Columnas (como antes)
         TableColumn<Campeon, String> colImagen = new TableColumn<>("Imagen");
         colImagen.setPrefWidth(80);
         colImagen.setCellFactory(param -> new TableCell<Campeon, String>() {
@@ -97,55 +108,135 @@ public class MainApp extends Application {
         });
         colImagen.setCellValueFactory(new PropertyValueFactory<>("imagen"));
 
-        // Columna Nombre
         TableColumn<Campeon, String> colNombre = new TableColumn<>("Nombre");
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
 
-        // Columna Título
         TableColumn<Campeon, String> colTitulo = new TableColumn<>("Título");
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
 
-        // Columna Key
         TableColumn<Campeon, String> colKey = new TableColumn<>("Key");
         colKey.setCellValueFactory(new PropertyValueFactory<>("key"));
 
         table.getColumns().addAll(colImagen, colNombre, colTitulo, colKey);
 
-        // Ajustes de la tabla
         table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        table.setPlaceholder(new Label("Cargando campeones... o no hay datos aún"));
+        table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(70);
 
-        root.setCenter(table);
+        // Panel de detalles (derecha, inicialmente oculto)
+        detallesPanel.setPadding(new Insets(20));
+        detallesPanel.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #ccc; -fx-border-width: 1;");
 
-        // Filtro de búsqueda en tiempo real
+        lblNombreDetalles.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        lblTituloDetalles.setStyle("-fx-font-size: 16px; -fx-text-fill: gray;");
+
+        imgPrincipalDetalles.setFitWidth(200);
+        imgPrincipalDetalles.setPreserveRatio(true);
+
+        imgSplashDetalles.setFitWidth(300);
+        imgSplashDetalles.setPreserveRatio(true);
+
+        txtBiografia.setWrapText(true);
+        txtBiografia.setEditable(false);
+        txtBiografia.setPrefHeight(200);
+
+        btnCerrarDetalles.setOnAction(e -> ocultarDetalles());
+
+        detallesPanel.getChildren().addAll(
+                lblNombreDetalles,
+                lblTituloDetalles,
+                imgPrincipalDetalles,
+                new Label("Splashart:"),
+                imgSplashDetalles,
+                new Label("Biografía:"),
+                txtBiografia,
+                btnCerrarDetalles
+        );
+
+        // Inicialmente ocultar panel de detalles
+        detallesPanel.setVisible(false);
+        detallesPanel.setManaged(false);
+
+        // Añadir al SplitPane
+        splitPane.getItems().addAll(table, detallesPanel);
+
+        root.setCenter(splitPane);
+
+        // Filtro de búsqueda
         FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(campeon -> {
-                if (newValue == null || newValue.trim().isEmpty()) {
-                    return true;
-                }
-
+                if (newValue == null || newValue.trim().isEmpty()) return true;
                 String lowerCaseFilter = newValue.toLowerCase();
                 return campeon.getNombre().toLowerCase().contains(lowerCaseFilter);
             });
         });
 
-        // Ordena la lista filtrada (mantiene el orden de la tabla)
         SortedList<Campeon> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
-
         table.setItems(sortedData);
 
+        // Evento al seleccionar fila: mostrar detalles
+        table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                mostrarDetalles(newSelection);
+            } else {
+                ocultarDetalles();
+            }
+        });
+
         // Escena y stage
-        Scene scene = new Scene(root, 1100, 700);
+        Scene scene = new Scene(root, 1200, 700);
         primaryStage.setTitle("LoreRuneTerra");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    // Clase Campeon (modelo)
+    // Mostrar panel de detalles con el campeón seleccionado
+    private void mostrarDetalles(Campeon campeon) {
+        lblNombreDetalles.setText(campeon.getNombre());
+        lblTituloDetalles.setText(campeon.getTitulo());
+
+        // Imagen principal (más grande)
+        String rutaImg = campeon.getImagen();
+        if (rutaImg != null && !rutaImg.trim().isEmpty()) {
+            try {
+                String rutaLimpia = rutaImg.replace("file:///", "");
+                File file = new File(rutaLimpia);
+                if (file.exists()) {
+                    imgPrincipalDetalles.setImage(new Image(file.toURI().toString()));
+                }
+            } catch (Exception e) {
+                imgPrincipalDetalles.setImage(null);
+            }
+        }
+
+        // Splashart (ajustar la ruta si cambiamos el splash a otra carpeta)
+        String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/16.3.1/img/champion/splash/" + campeon.getKey() + "_0.jpg";
+        try {
+            imgSplashDetalles.setImage(new Image(rutaSplash));
+        } catch (Exception e) {
+            imgSplashDetalles.setImage(null);
+        }
+
+        // Biografía (por ahora placeholder)
+        txtBiografia.setText("Biografía completa de " + campeon.getNombre() + ".\n\nPróximamente cargada desde la tabla biografias o Universe.");
+
+        // Mostrar panel
+        detallesPanel.setVisible(true);
+        detallesPanel.setManaged(true);
+    }
+
+    // Ocultar panel de detalles
+    private void ocultarDetalles() {
+        detallesPanel.setVisible(false);
+        detallesPanel.setManaged(false);
+        // Podemos limpiar la selección luego...
+        // table.getSelectionModel().clearSelection();
+    }
+
+    // Clase Campeon (sin cambios)
     @SuppressWarnings("unused")
     public static class Campeon {
         private final StringProperty key = new SimpleStringProperty();
@@ -173,7 +264,7 @@ public class MainApp extends Application {
         public StringProperty imagenProperty() { return imagen; }
     }
 
-    // Cargar campeones desde BD
+    // Cargar desde BD (sin cambios)
     private void cargarCampeonesDesdeBD() {
         List<Campeon> lista = new ArrayList<>();
 
