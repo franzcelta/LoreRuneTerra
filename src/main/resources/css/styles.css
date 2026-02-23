@@ -1,65 +1,66 @@
-/* Fondo general de la app (azul marino oscuro LoL) */
+/* Fondo general de la app - azul marino oscuro LoL */
 .root {
     -fx-background-color: linear-gradient(to bottom, #0a1426, #000814);
-    -fx-font-family: "Cinzel", "Old English Text MT", "UnifrakturMaguntia", serif; /* Gótico épico */
+    -fx-font-family: "Cinzel", "Old English Text MT", serif; /* Gótico épico */
 }
 
-/* Títulos principales (dorado) */
+/* Títulos principales (dorado brillante) */
 .title-label {
-    -fx-text-fill: #c8aa6e;
+    -fx-text-fill: #ffd700;
     -fx-font-size: 30px;
     -fx-font-weight: bold;
-    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.5), 10, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 12, 0.8, 2, 2);
 }
 
 /* Subtítulos (dorado suave) */
 .subtitle-label {
-    -fx-text-fill: #c8aa6e;
+    -fx-text-fill: #d4a017;
     -fx-font-size: 18px;
 }
 
 /* Tabla de campeones */
 .table-view {
-    -fx-background-color: #0d1624;   /* Azul marino profundo para filas */
-    -fx-border-color: #1a2b44;
+    -fx-background-color: #0b0e17;   /* Negro azulado profundo */
+    -fx-border-color: #4a5a78;
 }
 
-/* Fondo de la barra de encabezados completa (las "cajas" de arriba) - marrón oscuro arenoso épico */
+/* Fondo de la barra de encabezados completa (las "cajas" de arriba) - marrón oscuro arenoso */
 .table-view .column-header-background {
     -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso base */
     -fx-background-image: linear-gradient(to bottom, #4a3a2a, #2c1f0f); /* Textura arenosa/castillo viejo */
     -fx-background-radius: 4;
     -fx-border-color: #4a3a2a;
     -fx-border-width: 0 0 2 0;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 8, 0.6, 0, 2); /* Sombra para profundidad */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0.7, 0, 2);
 }
 
-/* Cada celda individual del encabezado (para reforzar que no quede blanco) */
+/* Cada celda individual del encabezado (para reforzar que NO quede blanca) */
 .table-view .column-header {
     -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso - ¡esto es clave! */
     -fx-background-insets: 0;
+    -fx-padding: 4 0 4 0;
 }
 
-/* Texto de los encabezados (dorado para que resalte sobre marrón oscuro) */
+/* Texto de los encabezados - dorado para resaltar sobre marrón oscuro */
 .table-view .column-header .label {
-    -fx-text-fill: #c8aa6e;          /* Dorado LoL */
+    -fx-text-fill: #ffd700;          /* Dorado brillante */
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
     -fx-padding: 8 10;
 }
 
 /* Filas normales (no seleccionadas) - fondo azul marino oscuro, texto blanco puro */
 .table-row-cell {
-    -fx-background-color: #0d1624;   /* Azul marino uniforme */
+    -fx-background-color: #0b0e17;
     -fx-text-fill: #ffffff;          /* Blanco puro - resalta mucho */
-    -fx-border-color: #1a2b44;
+    -fx-border-color: #2c3e50;
     -fx-border-width: 0 0 1 0;
 }
 
-/* Fila seleccionada - fondo azul más claro, texto dorado */
+/* Fila seleccionada - fondo azul intenso, texto dorado */
 .table-row-cell:selected {
     -fx-background-color: #1f3a5f;
-    -fx-text-fill: #c8aa6e;
+    -fx-text-fill: #ffd700;
 }
 
 /* Hover */
@@ -81,37 +82,26 @@
     -fx-text-fill: #e6e6e6;
     -fx-font-size: 15px;
     -fx-padding: 15;
-    -fx-line-spacing: 5;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-color: #2c3e50;
+    -fx-line-spacing: 6;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: #4a5a78;
 }
 
 /* Botones */
 .button {
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
+    -fx-background-color: #1a2235;
+    -fx-text-fill: #c8aa6e;
     -fx-font-weight: bold;
     -fx-padding: 10 20;
+    -fx-border-color: #4a5a78;
+    -fx-border-width: 2;
     -fx-cursor: hand;
-    -fx-text-fill: white;
-    -fx-font-family: "Cinzel", serif;
 }
 
 .button:hover {
-    -fx-background-color: derive(-fx-background-color, 30%);
-}
-
-.edit-button {
-    -fx-background-color: #1f3a5f;
-}
-
-.save-button {
-    -fx-background-color: #2e7d32;
-}
-
-.close-button {
-    -fx-background-color: #c62828;
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: #ffd700;
 }
 
 /* ScrollPane */
@@ -119,7 +109,7 @@
     -fx-background: transparent;
 }
 
-/* Imágenes con sombra dorada */
+/* Imágenes con sombra */
 .image-view {
-    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.3), 15, 0.4, 0, 0);
+    -fx-effect: dropshadow(gaussian, #000000, 15, 0.6, 0, 0);
 }
