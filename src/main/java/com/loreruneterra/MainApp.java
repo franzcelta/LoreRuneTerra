@@ -253,13 +253,13 @@ public class MainApp extends Application {
         primaryStage.setTitle("LoreRuneTerra");
         primaryStage.setScene(scene);
 
-        // Cargar CSS (asegúrate de que la ruta sea correcta)
+        // Cargar CSS (ruta correcta desde resources/css/styles.css)
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 
-// Cargar CSS (asegúrate de que la ruta sea correcta)
+// Cargar CSS
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 
-// Aplicar clases CSS a los elementos importantes
+// Aplicar clases CSS
         tituloApp.getStyleClass().add("title-label");
         lblNombreDetalles.getStyleClass().add("title-label");
         lblTituloDetalles.getStyleClass().add("subtitle-label");
@@ -272,6 +272,7 @@ public class MainApp extends Application {
         scrollBio.getStyleClass().add("scroll-pane");
         scrollDetalles.getStyleClass().add("scroll-pane");
         table.getStyleClass().add("table-view");
+        detallesPanel.getStyleClass().add("detalles-panel");
 
         primaryStage.show();
     }
@@ -297,7 +298,7 @@ public class MainApp extends Application {
         }
 
         // Splashart grande (imagen épica)
-        String key = campeon.getKey();  // ← ESTA LÍNEA ES LA QUE FALTABA: definimos key aquí
+        String key = campeon.getKey();  // ← Definimos key aquí
         String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
         try {
             String rutaLimpia = rutaSplash.replace("file:///", "");
@@ -328,14 +329,14 @@ public class MainApp extends Application {
         detallesPanel.setManaged(true);
     }
 
-    // Oculta el panel derecho
+    // Ocultar el panel derecho
     private void ocultarDetalles() {
         detallesPanel.setVisible(false);
         detallesPanel.setManaged(false);
         campeonSeleccionado = null;
     }
 
-    // Abre diálogo grande para editar y pegar biografía
+    // Abrir diálogo grande para editar y pegar biografía
     private void abrirEditorLore(Campeon campeon) {
         if (campeon == null) return;
 
@@ -366,7 +367,7 @@ public class MainApp extends Application {
         });
     }
 
-    // Guarda la biografía en la base de datos
+    // Guardar la biografía en la base de datos
     private void guardarBiografia(String keyCampeon, String texto) {
         try (Connection conn = DatabaseConnector.getConnection()) {
             PreparedStatement psId = conn.prepareStatement("SELECT id FROM campeones WHERE key = ?");
@@ -401,7 +402,7 @@ public class MainApp extends Application {
         }
     }
 
-    // Carga todos los campeones desde la base de datos
+    // Cargar todos los campeones desde la base de datos
     private void cargarCampeonesDesdeBD() {
         List<Campeon> lista = new ArrayList<>();
 
@@ -428,7 +429,7 @@ public class MainApp extends Application {
         }
     }
 
-    // Carga la biografía guardada de un campeón desde la BD
+    // Cargar la biografía guardada de un campeón desde la BD
     private String cargarBiografia(String keyCampeon) {
         try (Connection conn = DatabaseConnector.getConnection()) {
             String sql = """

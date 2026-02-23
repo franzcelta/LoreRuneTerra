@@ -1,61 +1,72 @@
-/* =================================== FONDO GENERAL =================================== */
+/* Fondo general de la app (azul marino oscuro LoL) */
 .root {
-    -fx-background-color: linear-gradient(to bottom, #0b1426, #000000);  /* Azul-negro más profundo y elegante */
-    -fx-font-family: "Segoe UI", "Tahoma", sans-serif;
+    -fx-background-color: linear-gradient(to bottom, #0a1426, #000814);
+    -fx-font-family: "Cinzel", "Old English Text MT", "UnifrakturMaguntia", serif; /* Gótico */
 }
 
-/* =================================== TITULOS Y ETIQUETAS =================================== */
+/* Títulos principales (dorado) */
 .title-label {
-    -fx-text-fill: #c8aa6e;          /* Dorado premium de LoL */
+    -fx-text-fill: #c8aa6e;
     -fx-font-size: 30px;
     -fx-font-weight: bold;
-    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.6), 12, 0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.5), 10, 0, 0, 0);
 }
 
+/* Subtítulos (dorado suave) */
 .subtitle-label {
-    -fx-text-fill: #b0a080;          /* Dorado grisáceo suave */
-    -fx-font-size: 18px;
-    -fx-font-style: italic;
-}
-
-/* =================================== TABLA DE CAMPEONES =================================== */
-.table-view {
-    -fx-background-color: #0d1624;   /* Azul muy oscuro */
-    -fx-border-color: #1a2b44;
-    -fx-border-width: 1;
-}
-
-.table-view .column-header-background {
-    -fx-background-color: #17243a;   /* Cabezal más oscuro y elegante */
-}
-
-.table-view .column-header, .table-view .filler {
-    -fx-background-color: #17243a;
-    -fx-border-color: #2c3e50;
-}
-
-.table-view .label {
     -fx-text-fill: #c8aa6e;
+    -fx-font-size: 18px;
+}
+
+/* Tabla de campeones */
+.table-view {
+    -fx-background-color: #0d1624;   /* Azul marino profundo */
+    -fx-border-color: #1a2b44;
+}
+
+/* Fondo general de la barra de encabezados (contenedor) */
+.table-view .column-header-background {
+    -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso base */
+    -fx-background-image: linear-gradient(to bottom, #4a3a2a, #2c1f0f); /* Gradiente arenoso épico */
+    -fx-border-color: #4a3a2a;
+    -fx-border-width: 0 0 2 0;
+}
+
+/* Cada caja individual del encabezado (esto es lo que faltaba) */
+.table-view .column-header {
+    -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso - ¡ahora sí! */
+    -fx-background-insets: 0;
+    -fx-padding: 4 0 4 0;
+}
+
+/* Texto dentro de los encabezados (dorado para que resalte sobre marrón oscuro) */
+.table-view .column-header .label {
+    -fx-text-fill: #c8aa6e;          /* Dorado LoL */
     -fx-font-weight: bold;
     -fx-font-size: 14px;
+    -fx-padding: 8 10;
 }
 
+/* Filas normales (no seleccionadas) - fondo azul marino oscuro, texto blanco puro */
 .table-row-cell {
-    -fx-background-color: #0d1624;
-    -fx-text-fill: #e0e0e0;
-    -fx-border-color: transparent;
+    -fx-background-color: #0d1624;   /* Azul marino uniforme */
+    -fx-text-fill: #ffffff;          /* Blanco puro - resalta mucho */
+    -fx-border-color: #1a2b44;
+    -fx-border-width: 0 0 1 0;
 }
 
+/* Fila seleccionada - fondo azul más claro, texto dorado */
 .table-row-cell:selected {
-    -fx-background-color: #1f3a5f;   /* Azul seleccionado con contraste */
-    -fx-text-fill: white;
+    -fx-background-color: #1f3a5f;
+    -fx-text-fill: #c8aa6e;
 }
 
+/* Hover */
 .table-row-cell:hover {
-    -fx-background-color: #162840;   /* Hover sutil pero visible */
+    -fx-background-color: #162840;
 }
 
-/* =================================== PANEL DE DETALLES =================================== */
+/* Panel de detalles */
 .detalles-panel {
     -fx-background-color: linear-gradient(to bottom, #0f1a2b, #05070d);
     -fx-border-color: #1e2a3a;
@@ -63,59 +74,51 @@
     -fx-padding: 20;
 }
 
-/* =================================== TEXT AREA (BIOGRAFÍA) =================================== */
+/* Biografía */
 .biography-text-area {
     -fx-control-inner-background: #0f1421;
-    -fx-text-fill: #d8d8d8;
+    -fx-text-fill: #e6e6e6;
     -fx-font-size: 15px;
-    -fx-font-family: "Segoe UI", sans-serif;
     -fx-padding: 15;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
+    -fx-line-spacing: 5;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
     -fx-border-color: #2c3e50;
-    -fx-border-width: 1;
 }
 
-/* =================================== BOTONES =================================== */
+/* Botones */
 .button {
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
     -fx-font-weight: bold;
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 10 20;
     -fx-cursor: hand;
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-family: "Cinzel", serif;
 }
 
 .button:hover {
     -fx-background-color: derive(-fx-background-color, 30%);
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
 }
 
 .edit-button {
-    -fx-background-color: #1f3a5f;  /* Azul oscuro elegante */
+    -fx-background-color: #1f3a5f;
 }
 
 .save-button {
-    -fx-background-color: #2e7d32;  /* Verde éxito */
+    -fx-background-color: #2e7d32;
 }
 
 .close-button {
-    -fx-background-color: #c62828;  /* Rojo intenso */
+    -fx-background-color: #c62828;
 }
 
-/* =================================== SCROLL PANE =================================== */
+/* ScrollPane */
 .scroll-pane {
     -fx-background: transparent;
-    -fx-background-color: transparent;
 }
 
-.scroll-bar:vertical .thumb {
-    -fx-background-color: #555;
-}
-
-/* =================================== IMAGENES =================================== */
+/* Imágenes con sombra dorada */
 .image-view {
-    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.3), 20, 0.4, 0, 0);  /* Sombra dorada suave */
+    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.3), 15, 0.4, 0, 0);
 }
