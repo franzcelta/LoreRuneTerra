@@ -130,24 +130,24 @@ public class MainApp extends Application {
         table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(70);
 
-        // Panel de detalles
+        // Panel de detalles (con ScrollPane)
         detallesPanel.setPadding(new Insets(20));
         detallesPanel.setStyle("-fx-background-color: #111111; -fx-border-color: #333; -fx-border-width: 0 0 0 1;");
-        detallesPanel.setVisible(false);
-        detallesPanel.setManaged(false);
 
-        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;");
+        lblNombreDetalles.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;");
         lblTituloDetalles.setStyle("-fx-font-size: 18px; -fx-text-fill: #aaa; -fx-padding: 0 0 15 0;");
 
         imgPrincipalDetalles.setFitWidth(250);
         imgPrincipalDetalles.setPreserveRatio(true);
 
-        imgSplashDetalles.setFitWidth(550);
+        // Splash art: tamaño máximo fijo (no crece infinitamente)
+        imgSplashDetalles.setFitWidth(400);
         imgSplashDetalles.setPreserveRatio(true);
+        imgSplashDetalles.setSmooth(true);
 
         txtBiografia.setWrapText(true);
         txtBiografia.setEditable(false);
-        txtBiografia.setPrefHeight(300);
+        txtBiografia.setPrefHeight(250);
         txtBiografia.setStyle("-fx-control-inner-background: #222222; -fx-text-fill: white; -fx-font-size: 14px;");
 
         ScrollPane scrollBio = new ScrollPane(txtBiografia);
@@ -185,7 +185,11 @@ public class MainApp extends Application {
                 botonesBox
         );
 
-        splitPane.getItems().addAll(table, detallesPanel);
+        ScrollPane scrollDetalles = new ScrollPane(detallesPanel);
+        scrollDetalles.setFitToWidth(true);
+        scrollDetalles.setStyle("-fx-background: transparent;");
+
+        splitPane.getItems().addAll(table, scrollDetalles);
 
         root.setCenter(splitPane);
 
@@ -260,7 +264,7 @@ public class MainApp extends Application {
             }
         }
 
-        // Splash art
+        // Splash art (tamaño fijo máximo)
         String key = campeon.getKey();
         String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
         try {
@@ -275,11 +279,43 @@ public class MainApp extends Application {
             imgSplashDetalles.setImage(null);
         }
 
-        // Biografía placeholder
-        txtBiografia.setText("Biografía completa de " + campeon.getNombre() + ".\n\nPróximamente desde Universe o tabla biografias.");
+        imgSplashDetalles.setFitWidth(400);  // Tamaño máximo - no crece más
+        imgSplashDetalles.setPreserveRatio(true);
+        imgSplashDetalles.setSmooth(true);
+
+        // Cargar biografía REAL desde BD
+        String bio = cargarBiografia(key);
+        if (bio != null && !bio.trim().isEmpty()) {
+            txtBiografia.setText(bio);
+        } else {
+            txtBiografia.setText("No hay biografía guardada aún para " + campeon.getNombre() + ".\nUsa 'Editar biografía' para agregar desde Universe.");
+        }
 
         detallesPanel.setVisible(true);
         detallesPanel.setManaged(true);
+    }
+
+    private String cargarBiografia(String keyCampeon) {
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            String sql = """
+                SELECT biografia_completa
+                FROM biografias b
+                JOIN campeones c ON b.campeon_id = c.id
+                WHERE c.key = ?
+                ORDER BY ultima_actualizacion DESC
+                LIMIT 1
+                """;
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, keyCampeon);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("biografia_completa");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error cargando biografía: " + e.getMessage());
+        }
+        return null;
     }
 
     private void ocultarDetalles() {
@@ -313,7 +349,7 @@ public class MainApp extends Application {
         dialog.showAndWait().ifPresent(nuevoTexto -> {
             if (nuevoTexto != null && !nuevoTexto.trim().isEmpty()) {
                 guardarBiografia(campeon.getKey(), nuevoTexto);
-                mostrarDetalles(campeon);  // refresca la vista
+                mostrarDetalles(campeon);
             }
         });
     }
