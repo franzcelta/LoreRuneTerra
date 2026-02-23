@@ -1,7 +1,7 @@
 /* Fondo general de la app (azul marino oscuro LoL) */
 .root {
     -fx-background-color: linear-gradient(to bottom, #0a1426, #000814);
-    -fx-font-family: "Cinzel", "Old English Text MT", "UnifrakturMaguntia", serif; /* Gótico */
+    -fx-font-family: "Cinzel", "Old English Text MT", "UnifrakturMaguntia", serif; /* Gótico épico */
 }
 
 /* Títulos principales (dorado) */
@@ -20,26 +20,27 @@
 
 /* Tabla de campeones */
 .table-view {
-    -fx-background-color: #0d1624;   /* Azul marino profundo */
+    -fx-background-color: #0d1624;   /* Azul marino profundo para filas */
     -fx-border-color: #1a2b44;
 }
 
-/* Fondo general de la barra de encabezados (contenedor) */
+/* Fondo de la barra de encabezados completa (las "cajas" de arriba) - marrón oscuro arenoso épico */
 .table-view .column-header-background {
     -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso base */
-    -fx-background-image: linear-gradient(to bottom, #4a3a2a, #2c1f0f); /* Gradiente arenoso épico */
+    -fx-background-image: linear-gradient(to bottom, #4a3a2a, #2c1f0f); /* Textura arenosa/castillo viejo */
+    -fx-background-radius: 4;
     -fx-border-color: #4a3a2a;
     -fx-border-width: 0 0 2 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 8, 0.6, 0, 2); /* Sombra para profundidad */
 }
 
-/* Cada caja individual del encabezado (esto es lo que faltaba) */
+/* Cada celda individual del encabezado (para reforzar que no quede blanco) */
 .table-view .column-header {
-    -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso - ¡ahora sí! */
+    -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso - ¡esto es clave! */
     -fx-background-insets: 0;
-    -fx-padding: 4 0 4 0;
 }
 
-/* Texto dentro de los encabezados (dorado para que resalte sobre marrón oscuro) */
+/* Texto de los encabezados (dorado para que resalte sobre marrón oscuro) */
 .table-view .column-header .label {
     -fx-text-fill: #c8aa6e;          /* Dorado LoL */
     -fx-font-weight: bold;
@@ -71,7 +72,7 @@
     -fx-background-color: linear-gradient(to bottom, #0f1a2b, #05070d);
     -fx-border-color: #1e2a3a;
     -fx-border-width: 0 0 0 2;
-    -fx-padding: 20;
+    -fx-padding: 15;
 }
 
 /* Biografía */
