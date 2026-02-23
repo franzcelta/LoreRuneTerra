@@ -1,68 +1,121 @@
-/* styles.css - Tema oscuro League of Legends style */
-
+/* =================================== FONDO GENERAL =================================== */
 .root {
-    -fx-background-color: #0a0a0a;
+    -fx-background-color: linear-gradient(to bottom, #0b1426, #000000);  /* Azul-negro más profundo y elegante */
+    -fx-font-family: "Segoe UI", "Tahoma", sans-serif;
 }
 
-.label {
-    -fx-text-fill: #e0e0e0;
-}
-
+/* =================================== TITULOS Y ETIQUETAS =================================== */
 .title-label {
-    -fx-font-size: 26px;
+    -fx-text-fill: #c8aa6e;          /* Dorado premium de LoL */
+    -fx-font-size: 30px;
     -fx-font-weight: bold;
-    -fx-text-fill: #c8aa6e;  /* Oro Runeterra */
+    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.6), 12, 0, 0, 0);
 }
 
 .subtitle-label {
-    -fx-font-size: 16px;
-    -fx-text-fill: #aaa;
-    -fx-padding: 0 0 10 0;
+    -fx-text-fill: #b0a080;          /* Dorado grisáceo suave */
+    -fx-font-size: 18px;
+    -fx-font-style: italic;
 }
 
-.biography-text-area {
-    -fx-control-inner-background: #1c1c1c;
-    -fx-text-fill: #d4d4d4;
-    -fx-font-size: 14px;
-    -fx-font-family: "Segoe UI", "Arial", sans-serif;
-    -fx-padding: 10;
-    -fx-background-radius: 4;
-    -fx-border-radius: 4;
-    -fx-border-color: #444;
+/* =================================== TABLA DE CAMPEONES =================================== */
+.table-view {
+    -fx-background-color: #0d1624;   /* Azul muy oscuro */
+    -fx-border-color: #1a2b44;
+    -fx-border-width: 1;
 }
 
-.button {
-    -fx-background-color: #333;
-    -fx-text-fill: white;
+.table-view .column-header-background {
+    -fx-background-color: #17243a;   /* Cabezal más oscuro y elegante */
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: #17243a;
+    -fx-border-color: #2c3e50;
+}
+
+.table-view .label {
+    -fx-text-fill: #c8aa6e;
     -fx-font-weight: bold;
-    -fx-padding: 8 16 8 16;
-    -fx-background-radius: 4;
+    -fx-font-size: 14px;
+}
+
+.table-row-cell {
+    -fx-background-color: #0d1624;
+    -fx-text-fill: #e0e0e0;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #1f3a5f;   /* Azul seleccionado con contraste */
+    -fx-text-fill: white;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #162840;   /* Hover sutil pero visible */
+}
+
+/* =================================== PANEL DE DETALLES =================================== */
+.detalles-panel {
+    -fx-background-color: linear-gradient(to bottom, #0f1a2b, #05070d);
+    -fx-border-color: #1e2a3a;
+    -fx-border-width: 0 0 0 2;
+    -fx-padding: 20;
+}
+
+/* =================================== TEXT AREA (BIOGRAFÍA) =================================== */
+.biography-text-area {
+    -fx-control-inner-background: #0f1421;
+    -fx-text-fill: #d8d8d8;
+    -fx-font-size: 15px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-padding: 15;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: #2c3e50;
+    -fx-border-width: 1;
+}
+
+/* =================================== BOTONES =================================== */
+.button {
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
 }
 
 .button:hover {
-    -fx-background-color: #555;
+    -fx-background-color: derive(-fx-background-color, 30%);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
 }
 
 .edit-button {
-    -fx-background-color: #444;
+    -fx-background-color: #1f3a5f;  /* Azul oscuro elegante */
 }
 
 .save-button {
-    -fx-background-color: #2e7d32;
+    -fx-background-color: #2e7d32;  /* Verde éxito */
 }
 
 .close-button {
-    -fx-background-color: #c62828;
+    -fx-background-color: #c62828;  /* Rojo intenso */
 }
 
-.image-view {
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 10, 0.5, 0, 0);
-}
-
+/* =================================== SCROLL PANE =================================== */
 .scroll-pane {
     -fx-background: transparent;
+    -fx-background-color: transparent;
 }
 
 .scroll-bar:vertical .thumb {
     -fx-background-color: #555;
+}
+
+/* =================================== IMAGENES =================================== */
+.image-view {
+    -fx-effect: dropshadow(gaussian, rgba(200,170,110,0.3), 20, 0.4, 0, 0);  /* Sombra dorada suave */
 }
