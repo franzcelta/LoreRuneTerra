@@ -28,8 +28,10 @@ import java.util.List;
 
 public class MainApp extends Application {
 
+    // Lista observable que uso para cargar los campeones desde la BD
     private final ObservableList<Campeon> campeonesList = FXCollections.observableArrayList();
 
+    // Panel derecho donde muestro los detalles del campeón seleccionado
     private final VBox detallesPanel = new VBox(15);
     private final Label lblNombreDetalles = new Label();
     private final Label lblTituloDetalles = new Label();
@@ -39,21 +41,23 @@ public class MainApp extends Application {
     private final Button btnEditarBio = new Button("Editar biografía");
     private final Button btnCerrarDetalles = new Button("Cerrar detalles");
 
+    // Guardo referencia al campeón seleccionado actualmente
     private Campeon campeonSeleccionado = null;
 
     @Override
     public void start(Stage primaryStage) {
 
+        // Cargo los campeones al iniciar la app
         cargarCampeonesDesdeBD();
 
         BorderPane root = new BorderPane();
 
+        // ====== PANEL SUPERIOR (título + búsqueda) ======
         VBox topBox = new VBox(10);
         topBox.setPadding(new Insets(10));
-        topBox.setStyle("-fx-background-color: #0f0f0f;");
 
         Label tituloApp = new Label("LoreRuneTerra - Campeones de Runeterra");
-        tituloApp.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+        tituloApp.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
         TextField searchField = new TextField();
         searchField.setPromptText("Buscar por nombre...");
@@ -62,14 +66,18 @@ public class MainApp extends Application {
         topBox.getChildren().addAll(tituloApp, searchField);
         root.setTop(topBox);
 
+        // ====== SPLITPANE (tabla izquierda, detalles derecha) ======
         SplitPane splitPane = new SplitPane();
         splitPane.setDividerPositions(0.65);
 
         TableView<Campeon> table = new TableView<>();
         table.setItems(campeonesList);
 
+        // Columna imagen (miniatura)
         TableColumn<Campeon, String> colImagen = new TableColumn<>("Imagen");
         colImagen.setPrefWidth(80);
+
+        // Renderizo manualmente la imagen en la celda
         colImagen.setCellFactory(param -> new TableCell<>() {
             private final ImageView imageView = new ImageView();
 
@@ -105,6 +113,7 @@ public class MainApp extends Application {
         });
         colImagen.setCellValueFactory(new PropertyValueFactory<>("imagen"));
 
+        // Columnas normales
         TableColumn<Campeon, String> colNombre = new TableColumn<>("Nombre");
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
 
@@ -117,7 +126,9 @@ public class MainApp extends Application {
         table.getColumns().addAll(colImagen, colNombre, colTitulo, colKey);
         table.setFixedCellSize(70);
 
+        // ====== PANEL DE DETALLES ======
         detallesPanel.setPadding(new Insets(20));
+
         lblNombreDetalles.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;");
         lblTituloDetalles.setStyle("-fx-font-size: 18px;");
 
@@ -151,6 +162,8 @@ public class MainApp extends Application {
         splitPane.getItems().addAll(table, scrollDetalles);
         root.setCenter(splitPane);
 
+        // ====== FILTRO DE BÚSQUEDA ======
+        // Uso FilteredList para que la tabla se actualice dinámicamente
         FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
 
         searchField.textProperty().addListener((obs, old, val) -> {
@@ -164,6 +177,7 @@ public class MainApp extends Application {
         sortedData.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedData);
 
+        // Cuando selecciono un campeón en la tabla, muestro sus detalles
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, nuevo) -> {
             if (nuevo != null) {
                 campeonSeleccionado = nuevo;
@@ -173,6 +187,7 @@ public class MainApp extends Application {
             }
         });
 
+        // Botón para editar biografía (abre diálogo)
         btnEditarBio.setOnAction(e -> {
             if (campeonSeleccionado != null) {
                 abrirEditorLore(campeonSeleccionado);
@@ -187,6 +202,7 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
+    // Muestro en el panel derecho los datos del campeón seleccionado
     private void mostrarDetalles(Campeon campeon) {
 
         lblNombreDetalles.setText(campeon.getNombre());
@@ -194,6 +210,7 @@ public class MainApp extends Application {
 
         String key = campeon.getKey();
 
+        // Cargo la biografía más reciente desde la BD
         String bio = cargarBiografia(key);
         if (bio != null && !bio.isBlank()) {
             txtBiografia.setText(bio);
@@ -202,6 +219,7 @@ public class MainApp extends Application {
                     + campeon.getNombre());
         }
 
+        // Cargo imagen principal
         try {
             if (campeon.getImagen() != null) {
                 File file = new File(campeon.getImagen().replace("file:///", ""));
@@ -211,6 +229,7 @@ public class MainApp extends Application {
             }
         } catch (Exception ignored) {}
 
+        // Cargo splash art desde ruta local
         try {
             File splash = new File(
                     "C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/"
@@ -225,6 +244,7 @@ public class MainApp extends Application {
         } catch (Exception ignored) {}
     }
 
+    // Obtengo la biografía más reciente del campeón desde la BD
     private String cargarBiografia(String keyCampeon) {
         try (Connection conn = DatabaseConnector.getConnection()) {
 
@@ -250,12 +270,14 @@ public class MainApp extends Application {
         return null;
     }
 
+    // Oculto el panel de detalles cuando no hay selección
     private void ocultarDetalles() {
         detallesPanel.setVisible(false);
         detallesPanel.setManaged(false);
         campeonSeleccionado = null;
     }
 
+    // Abro un diálogo simple para pegar/editar la biografía manualmente
     private void abrirEditorLore(Campeon campeon) {
 
         Dialog<String> dialog = new Dialog<>();
@@ -278,6 +300,7 @@ public class MainApp extends Application {
         });
     }
 
+    // Inserto o actualizo la biografía en la BD
     private void guardarBiografia(String keyCampeon, String texto) {
         try (Connection conn = DatabaseConnector.getConnection()) {
 
@@ -306,6 +329,7 @@ public class MainApp extends Application {
         }
     }
 
+    // Cargo todos los campeones ordenados alfabéticamente
     private void cargarCampeonesDesdeBD() {
 
         try (Connection conn = DatabaseConnector.getConnection()) {
@@ -328,6 +352,7 @@ public class MainApp extends Application {
         }
     }
 
+    // Clase modelo simple para representar un campeón
     public static class Campeon {
 
         private final StringProperty key;
