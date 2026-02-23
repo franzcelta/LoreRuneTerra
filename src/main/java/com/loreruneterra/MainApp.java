@@ -198,7 +198,7 @@ public class MainApp extends Application {
         lblNombreDetalles.setText(campeon.getNombre());
         lblTituloDetalles.setText(campeon.getTitulo());
 
-        // Imagen principal (más grande)
+        // Imagen principal (la pequeña/icon del campeón, más grande en detalles)
         String rutaImg = campeon.getImagen();
         if (rutaImg != null && !rutaImg.trim().isEmpty()) {
             try {
@@ -211,19 +211,34 @@ public class MainApp extends Application {
                 imgPrincipalDetalles.setImage(null);
             }
         }
+        imgPrincipalDetalles.setFitWidth(250);
+        imgPrincipalDetalles.setPreserveRatio(true);
 
-        // Splashart (ajustar la ruta si cambiamos el splash a otra carpeta)
-        String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/16.3.1/img/champion/splash/" + campeon.getKey() + "_0.jpg";
+        // Splashart grande (desde la carpeta splash)
+        String key = campeon.getKey();
+        String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
+
         try {
-            imgSplashDetalles.setImage(new Image(rutaSplash));
+            File splashFile = new File(rutaSplash.replace("file:///", ""));
+            if (splashFile.exists()) {
+                imgSplashDetalles.setImage(new Image(rutaSplash));
+                System.out.println("Splashart cargado: " + rutaSplash);
+            } else {
+                System.out.println("Splashart no encontrado: " + rutaSplash);
+                imgSplashDetalles.setImage(null);
+            }
         } catch (Exception e) {
+            System.err.println("Error cargando splashart: " + rutaSplash);
             imgSplashDetalles.setImage(null);
         }
 
-        // Biografía (por ahora placeholder)
-        txtBiografia.setText("Biografía completa de " + campeon.getNombre() + ".\n\nPróximamente cargada desde la tabla biografias o Universe.");
+        imgSplashDetalles.setFitWidth(500);  // tamaño grande, ajustar mas tarde...
+        imgSplashDetalles.setPreserveRatio(true);
 
-        // Mostrar panel
+        // Biografía (placeholder por ahora)
+        txtBiografia.setText("Biografía completa de " + campeon.getNombre() + ".\n\nPróximamente desde la tabla biografias o Universe.");
+
+        // Mostrar el panel
         detallesPanel.setVisible(true);
         detallesPanel.setManaged(true);
     }
