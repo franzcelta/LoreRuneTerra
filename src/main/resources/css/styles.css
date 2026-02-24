@@ -113,3 +113,62 @@
 .image-view {
     -fx-effect: dropshadow(gaussian, #000000, 15, 0.6, 0, 0);
 }
+
+/* Barras de scroll - doradas para que combinen con el tema */
+.scroll-pane .scroll-bar:vertical,
+.scroll-pane .scroll-bar:horizontal {
+    -fx-background-color: #1e2a3a;   /* Fondo oscuro para la pista */
+    -fx-border-color: #4a5a78;
+    -fx-border-width: 1;
+}
+
+/* Parte que se mueve (thumb) - dorado brillante */
+.scroll-bar .thumb {
+    -fx-background-color: #c8aa6e;   /* Dorado LoL - como pediste */
+    -fx-background-insets: 2;
+    -fx-background-radius: 4;
+}
+
+/* Thumb al pasar el ratón o al arrastrar - dorado más intenso */
+.scroll-bar .thumb:hover,
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #ffd700;   /* Dorado brillante para hover */
+    -fx-effect: dropshadow(gaussian, rgba(255,215,0,0.4), 8, 0.5, 0, 0);
+}
+
+/* Flechas de las barras (arriba/abajo) - dorado */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: #1e2a3a;
+    -fx-text-fill: #c8aa6e;          /* Flechas doradas */
+}
+
+/* Fondo de la pista detrás del thumb */
+.scroll-bar .track {
+    -fx-background-color: #0f1421;
+}
+
+/* Elimina bordes innecesarios */
+.scroll-bar .track-background {
+    -fx-background-color: transparent;
+}
+
+/* Elimina espacio muerto arriba del scroll y hace que la pista sea transparente/igual al fondo */
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical .track,
+.scroll-pane .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical .increment-arrow,
+.scroll-pane .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: #c8aa6e;  /* Flechas doradas para que combinen */
+}
+
+.scroll-pane {
+    -fx-padding: 0 !important;
+    -fx-background-insets: 0 !important;
+}

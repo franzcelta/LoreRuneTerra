@@ -30,15 +30,13 @@ public class MainApp extends Application {
 
     private final ObservableList<Campeon> campeonesList = FXCollections.observableArrayList();
 
-    // Panel de detalles
+    // Panel de detalles (solo splashart + bio + botones)
     private final VBox detallesPanel = new VBox(10);
     private final Label lblNombreDetalles = new Label();
     private final Label lblTituloDetalles = new Label();
-    private final ImageView imgPrincipalDetalles = new ImageView();
-    private final ImageView imgSplashDetalles = new ImageView();
+    private final ImageView imgSplashDetalles = new ImageView();      // Solo splashart grande
     private final TextArea txtBiografia = new TextArea("Selecciona un campeón para ver su biografía.");
     private final Button btnEditarBio = new Button("Editar biografía");
-    private final Button btnGuardarBio = new Button("Guardar cambios");
     private final Button btnCerrarDetalles = new Button("Cerrar detalles");
 
     private Campeon campeonSeleccionado = null;
@@ -127,23 +125,20 @@ public class MainApp extends Application {
         table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(60);
 
-        // Panel de detalles
-        detallesPanel.setPadding(new Insets(15));
+        // Panel de detalles (solo splashart + bio + botones)
+        detallesPanel.setPadding(new Insets(0, 15, 15, 15));  // 0 arriba, 15 en los lados y abajo
         detallesPanel.setStyle("-fx-background-color: #111111; -fx-border-color: #333; -fx-border-width: 0 0 0 1;");
 
         lblNombreDetalles.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #c8aa6e;");
         lblTituloDetalles.setStyle("-fx-font-size: 16px; -fx-text-fill: #aaa; -fx-padding: 0 0 10 0;");
 
-        imgPrincipalDetalles.setFitWidth(200);
-        imgPrincipalDetalles.setPreserveRatio(true);
-
-        imgSplashDetalles.setFitWidth(400);
+        imgSplashDetalles.setFitWidth(500);  // Más grande y protagonista
         imgSplashDetalles.setPreserveRatio(true);
         imgSplashDetalles.setSmooth(true);
 
         txtBiografia.setWrapText(true);
         txtBiografia.setEditable(false);
-        txtBiografia.setPrefHeight(200);
+        txtBiografia.setPrefHeight(300);
         txtBiografia.setStyle("-fx-control-inner-background: #222222; -fx-text-fill: white; -fx-font-size: 14px;");
 
         ScrollPane scrollBio = new ScrollPane(txtBiografia);
@@ -152,16 +147,10 @@ public class MainApp extends Application {
 
         HBox botonesBox = new HBox(10);
         botonesBox.setAlignment(Pos.CENTER_RIGHT);
-        botonesBox.getChildren().addAll(btnEditarBio, btnGuardarBio, btnCerrarDetalles);
+        botonesBox.getChildren().addAll(btnEditarBio, btnCerrarDetalles);
 
         btnEditarBio.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
-        btnGuardarBio.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
         btnCerrarDetalles.setStyle("-fx-background-color: #c62828; -fx-text-fill: white;");
-
-        btnGuardarBio.setVisible(false);
-
-        Label lblImagen = new Label("Imagen principal");
-        lblImagen.setStyle("-fx-font-size: 14px; -fx-text-fill: #bbb;");
 
         Label lblSplash = new Label("Splash art");
         lblSplash.setStyle("-fx-font-size: 14px; -fx-text-fill: #bbb;");
@@ -172,8 +161,6 @@ public class MainApp extends Application {
         detallesPanel.getChildren().addAll(
                 lblNombreDetalles,
                 lblTituloDetalles,
-                lblImagen,
-                imgPrincipalDetalles,
                 lblSplash,
                 imgSplashDetalles,
                 lblBio,
@@ -181,12 +168,22 @@ public class MainApp extends Application {
                 botonesBox
         );
 
-        ScrollPane scrollDetalles = new ScrollPane(detallesPanel);
-        scrollDetalles.setFitToWidth(true);
-        scrollDetalles.setStyle("-fx-background: transparent;");
+        // Panel de detalles derecho - compacto y sin espacios muertos
+        detallesPanel.setPadding(new Insets(0));  // Cero padding total
 
+        ScrollPane scrollDetalles = new ScrollPane(detallesPanel);
+        scrollDetalles.setPadding(Insets.EMPTY);               // Elimina TODO padding del ScrollPane
+        scrollDetalles.setFitToWidth(true);
+        scrollDetalles.setFitToHeight(true);                   // Se ajusta a la altura disponible
+        scrollDetalles.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;"); // Refuerza cero padding
+        scrollDetalles.setPannable(true);                      // Permite arrastrar con ratón
+        scrollDetalles.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);  // Solo muestra barra si es necesario
+        scrollDetalles.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);     // Oculta barra horizontal (no necesaria)
+
+        // Añadir al SplitPane
         splitPane.getItems().addAll(table, scrollDetalles);
 
+        // Centrar en root
         root.setCenter(splitPane);
 
         // Filtro de búsqueda
@@ -210,7 +207,6 @@ public class MainApp extends Application {
                 campeonSeleccionado = newCampeon;
                 mostrarDetalles(newCampeon);
                 txtBiografia.setEditable(false);
-                btnGuardarBio.setVisible(false);
                 btnEditarBio.setVisible(true);
             } else {
                 ocultarDetalles();
@@ -221,15 +217,6 @@ public class MainApp extends Application {
         btnEditarBio.setOnAction(e -> {
             if (campeonSeleccionado != null) {
                 abrirEditorLore(campeonSeleccionado);
-            }
-        });
-
-        btnGuardarBio.setOnAction(e -> {
-            if (campeonSeleccionado != null) {
-                guardarBiografia(campeonSeleccionado.getKey(), txtBiografia.getText());
-                txtBiografia.setEditable(false);
-                btnGuardarBio.setVisible(false);
-                btnEditarBio.setVisible(true);
             }
         });
 
@@ -247,9 +234,7 @@ public class MainApp extends Application {
         lblTituloDetalles.getStyleClass().add("subtitle-label");
         txtBiografia.getStyleClass().add("biography-text-area");
         btnEditarBio.getStyleClass().addAll("button", "edit-button");
-        btnGuardarBio.getStyleClass().addAll("button", "save-button");
         btnCerrarDetalles.getStyleClass().addAll("button", "close-button");
-        imgPrincipalDetalles.getStyleClass().add("image-view");
         imgSplashDetalles.getStyleClass().add("image-view");
         scrollBio.getStyleClass().add("scroll-pane");
         scrollDetalles.getStyleClass().add("scroll-pane");
@@ -261,25 +246,12 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
+    // Muestra el panel derecho con solo splashart + biografía
     private void mostrarDetalles(Campeon campeon) {
         lblNombreDetalles.setText(campeon.getNombre());
         lblTituloDetalles.setText(campeon.getTitulo());
 
-        // Imagen principal
-        String rutaImg = campeon.getImagen();
-        if (rutaImg != null && !rutaImg.trim().isEmpty()) {
-            try {
-                String rutaLimpia = rutaImg.replace("file:///", "");
-                File file = new File(rutaLimpia);
-                if (file.exists()) {
-                    imgPrincipalDetalles.setImage(new Image(file.toURI().toString()));
-                }
-            } catch (Exception ignored) {
-                imgPrincipalDetalles.setImage(null);
-            }
-        }
-
-        // Splash art
+        // Solo splashart grande
         String key = campeon.getKey();
         String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
         try {
@@ -294,7 +266,7 @@ public class MainApp extends Application {
             imgSplashDetalles.setImage(null);
         }
 
-        imgSplashDetalles.setFitWidth(400);
+        imgSplashDetalles.setFitWidth(500);  // Más grande y protagonista
         imgSplashDetalles.setPreserveRatio(true);
         imgSplashDetalles.setSmooth(true);
 
@@ -310,35 +282,14 @@ public class MainApp extends Application {
         detallesPanel.setManaged(true);
     }
 
-    private String cargarBiografia(String keyCampeon) {
-        try (Connection conn = DatabaseConnector.getConnection()) {
-            String sql = """
-                SELECT biografia_completa
-                FROM biografias b
-                JOIN campeones c ON b.campeon_id = c.id
-                WHERE c.key = ?
-                ORDER BY ultima_actualizacion DESC
-                LIMIT 1
-                """;
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, keyCampeon);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString("biografia_completa");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error cargando biografía: " + e.getMessage());
-        }
-        return null;
-    }
-
+    // Oculta el panel derecho
     private void ocultarDetalles() {
         detallesPanel.setVisible(false);
         detallesPanel.setManaged(false);
         campeonSeleccionado = null;
     }
 
+    // Abre diálogo para editar biografía
     private void abrirEditorLore(Campeon campeon) {
         if (campeon == null) return;
 
@@ -369,6 +320,7 @@ public class MainApp extends Application {
         });
     }
 
+    // Guarda la biografía en la base de datos
     private void guardarBiografia(String keyCampeon, String texto) {
         try (Connection conn = DatabaseConnector.getConnection()) {
             PreparedStatement psId = conn.prepareStatement("SELECT id FROM campeones WHERE key = ?");
@@ -403,6 +355,7 @@ public class MainApp extends Application {
         }
     }
 
+    // Carga todos los campeones desde la base de datos
     private void cargarCampeonesDesdeBD() {
         List<Campeon> lista = new ArrayList<>();
 
@@ -429,6 +382,31 @@ public class MainApp extends Application {
         }
     }
 
+    // Carga la biografía guardada desde la BD
+    private String cargarBiografia(String keyCampeon) {
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            String sql = """
+                SELECT biografia_completa
+                FROM biografias b
+                JOIN campeones c ON b.campeon_id = c.id
+                WHERE c.key = ?
+                ORDER BY ultima_actualizacion DESC
+                LIMIT 1
+                """;
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, keyCampeon);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("biografia_completa");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error cargando biografía: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // Modelo del campeón
     @SuppressWarnings("unused")
     public static class Campeon {
         private final StringProperty key = new SimpleStringProperty();
