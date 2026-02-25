@@ -1,10 +1,8 @@
 package com.loreruneterra;
 
 import com.loreruneterra.db.DatabaseConnector;
-import com.loreruneterra.view.ChampionBookView;
+import com.loreruneterra.model.Campeon;
 import javafx.application.Application;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -461,8 +459,7 @@ public class MainApp extends Application {
         return null;
     }
 
-    // Modelo del campeón
-    @SuppressWarnings("unused")
+    // Modelo del campeón eliminada del main. Ahora en su propia clase.
 
 
     public static void main(String[] args) {

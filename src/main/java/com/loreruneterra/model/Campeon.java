@@ -1,4 +1,4 @@
-package com.loreruneterra;
+package com.loreruneterra.model;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

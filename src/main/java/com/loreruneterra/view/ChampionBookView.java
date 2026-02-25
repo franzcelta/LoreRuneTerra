@@ -1,6 +1,6 @@
 package com.loreruneterra.view;
 
-import com.loreruneterra.Campeon;
+import com.loreruneterra.model.Campeon;
 import com.loreruneterra.MainApp;  // Necesario para llamar a cargarBiografia (o pásalo como parámetro)
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
