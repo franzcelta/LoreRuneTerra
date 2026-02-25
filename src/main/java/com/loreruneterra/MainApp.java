@@ -1,6 +1,7 @@
 package com.loreruneterra;
 
 import com.loreruneterra.db.DatabaseConnector;
+import com.loreruneterra.view.ChampionBookView;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -202,14 +203,68 @@ public class MainApp extends Application {
         table.setItems(sortedData);
 
         // Selección de campeón
+        // Selección de campeón → muestra "libro" en el panel derecho
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
-                mostrarDetalles(newCampeon);
-                txtBiografia.setEditable(false);
-                btnEditarBio.setVisible(true);
+
+                // Limpiamos el panel de detalles y lo convertimos en "libro"
+                detallesPanel.getChildren().clear();
+
+                // Título del campeón
+                Label libroTitulo = new Label(newCampeon.getNombre() + " - " + newCampeon.getTitulo());
+                libroTitulo.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #c8aa6e;");
+
+                // Splashart grande (protagonista)
+                ImageView splashGrande = new ImageView();
+                String key = newCampeon.getKey();
+                String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
+                try {
+                    String rutaLimpia = rutaSplash.replace("file:///", "");
+                    File file = new File(rutaLimpia);
+                    if (file.exists()) {
+                        splashGrande.setImage(new Image(file.toURI().toString()));
+                    }
+                } catch (Exception ignored) {}
+                splashGrande.setFitWidth(500);
+                splashGrande.setPreserveRatio(true);
+                splashGrande.setSmooth(true);
+
+                // Biografía cargada desde BD
+                TextArea bioArea = new TextArea();
+                bioArea.setWrapText(true);
+                bioArea.setEditable(false);
+                bioArea.setPrefHeight(400);
+                bioArea.setStyle("-fx-control-inner-background: #222222; -fx-text-fill: white; -fx-font-size: 14px;");
+                String bio = cargarBiografia(key);
+                bioArea.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
+
+                // Botones abajo
+                HBox botones = new HBox(10);
+                botones.setAlignment(Pos.CENTER_RIGHT);
+                Button cerrarBtn = new Button("Cerrar libro");
+                cerrarBtn.setStyle("-fx-background-color: #c62828; -fx-text-fill: white;");
+                cerrarBtn.setOnAction(e -> {
+                    detallesPanel.getChildren().clear();  // Limpia el "libro"
+                    detallesPanel.setVisible(false);
+                    detallesPanel.setManaged(false);
+                });
+                botones.getChildren().add(cerrarBtn);
+
+                // Añadimos todo al panel
+                detallesPanel.getChildren().addAll(
+                        libroTitulo,
+                        splashGrande,
+                        new Label("Biografía:"),
+                        bioArea,
+                        botones
+                );
+
+                detallesPanel.setVisible(true);
+                detallesPanel.setManaged(true);
             } else {
-                ocultarDetalles();
+                detallesPanel.setVisible(false);
+                detallesPanel.setManaged(false);
             }
         });
 
@@ -383,7 +438,7 @@ public class MainApp extends Application {
     }
 
     // Carga la biografía guardada desde la BD
-    private String cargarBiografia(String keyCampeon) {
+    public static String cargarBiografia(String keyCampeon) {
         try (Connection conn = DatabaseConnector.getConnection()) {
             String sql = """
                 SELECT biografia_completa
@@ -408,31 +463,7 @@ public class MainApp extends Application {
 
     // Modelo del campeón
     @SuppressWarnings("unused")
-    public static class Campeon {
-        private final StringProperty key = new SimpleStringProperty();
-        private final StringProperty nombre = new SimpleStringProperty();
-        private final StringProperty titulo = new SimpleStringProperty();
-        private final StringProperty imagen = new SimpleStringProperty();
 
-        public Campeon(String key, String nombre, String titulo, String imagen) {
-            this.key.set(key);
-            this.nombre.set(nombre);
-            this.titulo.set(titulo);
-            this.imagen.set(imagen);
-        }
-
-        public String getKey() { return key.get(); }
-        public StringProperty keyProperty() { return key; }
-
-        public String getNombre() { return nombre.get(); }
-        public StringProperty nombreProperty() { return nombre; }
-
-        public String getTitulo() { return titulo.get(); }
-        public StringProperty tituloProperty() { return titulo; }
-
-        public String getImagen() { return imagen.get(); }
-        public StringProperty imagenProperty() { return imagen; }
-    }
 
     public static void main(String[] args) {
         launch(args);
