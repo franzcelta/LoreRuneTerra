@@ -25,6 +25,7 @@ public class MainApp extends Application {
         // Crear el controlador
         MainController controller = new MainController(championDAO, campeonesList);
 
+        // Crear escena con el root que devuelve el controlador
         Scene scene = new Scene(controller.getRoot(), 1300, 800);
         scene.setFill(javafx.scene.paint.Color.BLACK);
 

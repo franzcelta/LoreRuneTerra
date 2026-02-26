@@ -3,10 +3,10 @@ package com.loreruneterra.controller;
 import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
 
-import javafx.collections.FXCollections;  // ← Para ObservableList
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;  // ← Para FilteredList
-import javafx.collections.transformation.SortedList;     // ← Para SortedList
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -27,7 +27,7 @@ public class MainController {
     private final ChampionDAO championDAO;
     private final ObservableList<Campeon> campeonesList;
 
-    // Nodos principales (campos de clase para que listeners puedan acceder)
+    // Nodos principales (campos para que listeners puedan acceder)
     private final BorderPane root = new BorderPane();
     private final SplitPane splitPane = new SplitPane();
     private final TableView<Campeon> table = new TableView<>();
@@ -127,7 +127,7 @@ public class MainController {
         table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(60);
 
-        // Panel de detalles (se transforma en "libro")
+        // Panel de detalles
         detallesPanel.setPadding(new Insets(0, 15, 15, 15));
         detallesPanel.setStyle("-fx-background-color: #111111; -fx-border-color: #333; -fx-border-width: 0 0 0 1;");
 
@@ -184,17 +184,16 @@ public class MainController {
     }
 
     private void setupListeners() {
-        // Filtro de búsqueda
+        // Filtro de búsqueda (necesitamos searchField para el listener)
+        // Luego lo pasamos como parámetro desde MainApp o movemos el searchField a MainController
         FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
-        // Necesitamos pasar searchField desde MainApp o moverlo a MainController
-        // Por ahora lo comentamos hasta que lo integremos completo
-        // searchField.textProperty().addListener(...);
+        // searchField.textProperty().addListener(...) ← añadimos esto cuando tengamos searchField
 
         SortedList<Campeon> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedData);
 
-        // Selección de campeón → transforma panel derecho en "libro"
+        // Selección de campeón → transformar panel derecho en "libro"
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
@@ -224,7 +223,6 @@ public class MainController {
                 String bio = championDAO.getBiografia(key);
                 txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
 
-                // Aseguramos botones visibles y con texto correcto
                 btnEditarBio.setVisible(true);
                 btnEditarBio.setText("Editar biografía");
                 btnCerrarDetalles.setText("Cerrar libro");
@@ -240,7 +238,7 @@ public class MainController {
         // Botones
         btnEditarBio.setOnAction(e -> {
             if (campeonSeleccionado != null) {
-                // abrirEditorLore(campeonSeleccionado);  // ← Mueve esto también si quieres
+                // abrirEditorLore(campeonSeleccionado);  ← Si lo tienes, llámalo aquí
             }
         });
 
