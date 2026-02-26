@@ -1,13 +1,16 @@
 package com.loreruneterra.controller;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
+
+import javafx.util.Duration;
+
 import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
 import com.loreruneterra.view.BiographyEditorDialog;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
-import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -48,11 +51,11 @@ public class MainController {
     private final Button btnEditarBio = new Button("Editar biografía");
     private final Button btnCerrarDetalles = new Button("Cerrar libro");
     private final ScrollPane scrollBio = new ScrollPane();
-    private final ScrollPane scrollDetalles = new ScrollPane();
     private final HBox botonesBox = new HBox(15);
     private final Label lblSplash = new Label("Ilustración");
     private final Label lblBio = new Label("Texto del Tomo");
     private final TextField searchField = new TextField();
+    private final ScrollPane scrollDetalles = new ScrollPane();
 
     private Campeon campeonSeleccionado = null;
 
@@ -65,7 +68,7 @@ public class MainController {
     }
 
     private void initializeUI() {
-        // Panel superior
+        // Panel superior compacto
         VBox topBox = new VBox(5);
         topBox.setPadding(new Insets(8));
         topBox.setStyle("-fx-background-color: #0f0f0f;");
@@ -97,21 +100,27 @@ public class MainController {
             @Override
             protected void updateItem(String url, boolean empty) {
                 super.updateItem(url, empty);
+
                 if (empty || url == null || url.trim().isEmpty()) {
                     setGraphic(null);
                     return;
                 }
+
                 try {
                     String rutaLimpia = url.replace("file:///", "");
                     File file = new File(rutaLimpia);
                     if (file.exists() && file.canRead()) {
                         imageView.setImage(new Image(file.toURI().toString()));
+                    } else {
+                        System.out.println("Imagen no encontrada: " + rutaLimpia);
+                        imageView.setImage(null);
                     }
                     imageView.setFitWidth(50);
                     imageView.setFitHeight(50);
                     imageView.setPreserveRatio(true);
                     imageView.setSmooth(true);
                 } catch (Exception e) {
+                    System.err.println("Error al cargar imagen: " + url);
                     imageView.setImage(null);
                 }
                 setGraphic(imageView);
@@ -137,7 +146,7 @@ public class MainController {
         // === LIBRO ABIERTO CON EFECTO 3D ===
         bookContainer.setStyle("-fx-background-color: #0a0a0a;");
 
-        // Página izquierda decorativa
+        // Página izquierda (decorativa)
         leftPage.setStyle("""
             -fx-background-color: #1c1810;
             -fx-background-radius: 8 0 0 8;
@@ -145,9 +154,11 @@ public class MainController {
         """);
         leftPage.setPrefWidth(320);
         leftPage.setAlignment(Pos.CENTER);
-        leftPage.getChildren().add(new Label("Crónicas Antiguas"));
+        Label leftText = new Label("Crónicas de Runeterra");
+        leftText.setStyle("-fx-font-size: 20px; -fx-text-fill: #8b7355; -fx-font-style: italic;");
+        leftPage.getChildren().add(leftText);
 
-        // Página derecha (contenido)
+        // Página derecha (contenido principal)
         rightPage.setStyle("""
             -fx-background-color: #1c1810;
             -fx-background-radius: 0 8 8 0;
@@ -155,7 +166,7 @@ public class MainController {
         """);
         rightPage.setPadding(new Insets(40, 50, 50, 50));
 
-        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3;");
+        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3; -fx-font-family: 'Cinzel' or serif;");
         lblTituloDetalles.setStyle("-fx-font-size: 18px; -fx-text-fill: #b89e6e; -fx-font-style: italic;");
 
         imgSplashDetalles.setFitWidth(480);
@@ -208,29 +219,38 @@ public class MainController {
                 String lowerCaseFilter = newValue.toLowerCase();
                 return campeon.getNombre().toLowerCase().contains(lowerCaseFilter);
             });
+
+            // Forzar actualización del libro si hay selección después del filtro
+            Campeon selected = table.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                // Simulamos un "cambio" para refrescar
+                table.getSelectionModel().clearSelection();
+                table.getSelectionModel().select(selected);
+            }
         });
 
         SortedList<Campeon> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedData);
 
+
         // Selección de campeón → transición suave de página (fade + slide)
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
 
-                // Transición suave: fade-out + slide-in
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), rightPage);
+                // Fade-out + slide-out de la página actual
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(250), rightPage);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
 
-                TranslateTransition slideOut = new TranslateTransition(Duration.millis(200), rightPage);
+                TranslateTransition slideOut = new TranslateTransition(Duration.millis(250), rightPage);
                 slideOut.setFromX(0);
-                slideOut.setToX(100); // Desplazamiento suave hacia la derecha
+                slideOut.setToX(50); // Desplazamiento suave hacia la derecha
 
                 ParallelTransition out = new ParallelTransition(fadeOut, slideOut);
                 out.setOnFinished(event -> {
-                    // Actualizamos contenido después del fade-out
+                    // Actualizamos contenido DESPUÉS del fade-out
                     lblNombreDetalles.setText(newCampeon.getNombre());
                     lblTituloDetalles.setText(newCampeon.getTitulo());
 
@@ -244,9 +264,11 @@ public class MainController {
                         } else {
                             imgSplashDetalles.setImage(null);
                         }
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                        imgSplashDetalles.setImage(null);
+                    }
 
-                    imgSplashDetalles.setFitWidth(480);
+                    imgSplashDetalles.setFitWidth(500);
                     imgSplashDetalles.setPreserveRatio(true);
                     imgSplashDetalles.setSmooth(true);
 
@@ -254,15 +276,16 @@ public class MainController {
                     txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
 
                     btnEditarBio.setVisible(true);
+                    btnEditarBio.setText("Editar biografía");
                     btnCerrarDetalles.setText("Cerrar libro");
 
-                    // Fade-in + slide-in de la nueva página
-                    FadeTransition fadeIn = new FadeTransition(Duration.millis(300), rightPage);
+                    // Fade-in + slide-in de la nueva página (entra desde la izquierda)
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(350), rightPage);
                     fadeIn.setFromValue(0.0);
                     fadeIn.setToValue(1.0);
 
-                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(300), rightPage);
-                    slideIn.setFromX(-100); // Entra desde la izquierda
+                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(350), rightPage);
+                    slideIn.setFromX(-50);
                     slideIn.setToX(0);
 
                     ParallelTransition in = new ParallelTransition(fadeIn, slideIn);
@@ -270,16 +293,10 @@ public class MainController {
                 });
 
                 out.play();
+
+                bookContainer.setVisible(true);
             } else {
                 bookContainer.setVisible(false);
-            }
-        });
-
-        // Botones
-        btnEditarBio.setOnAction(e -> {
-            if (campeonSeleccionado != null) {
-                BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
-                editor.show(campeonSeleccionado, txtBiografia);
             }
         });
 
