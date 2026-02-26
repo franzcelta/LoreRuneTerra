@@ -2,8 +2,9 @@ package com.loreruneterra.controller;
 
 import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
-
 import com.loreruneterra.view.BiographyEditorDialog;
+
+import javafx.animation.RotateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,6 +20,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Rotate;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.util.List;
@@ -28,11 +32,15 @@ public class MainController {
     private final ChampionDAO championDAO;
     private final ObservableList<Campeon> campeonesList;
 
-    // Nodos principales (campos para que listeners puedan acceder)
+    // Nodos principales
     private final BorderPane root = new BorderPane();
     private final SplitPane splitPane = new SplitPane();
     private final TableView<Campeon> table = new TableView<>();
-    private final VBox detallesPanel = new VBox(10);
+    private final StackPane bookContainer = new StackPane();     // ← Añadido
+    private final VBox leftPage = new VBox(10);                   // ← Añadido
+    private final VBox rightPage = new VBox(20);                  // ← Añadido
+    private final Rectangle bookSpine = new Rectangle(30, 600);   // ← Añadido (lomo)
+    private final VBox detallesPanel = new VBox(10);              // ← en caso de usarse
     private final Label lblNombreDetalles = new Label();
     private final Label lblTituloDetalles = new Label();
     private final ImageView imgSplashDetalles = new ImageView();
@@ -40,7 +48,12 @@ public class MainController {
     private final Button btnEditarBio = new Button("Editar biografía");
     private final Button btnCerrarDetalles = new Button("Cerrar libro");
     private final ScrollPane scrollBio = new ScrollPane();
-    private final ScrollPane scrollDetalles = new ScrollPane();
+    private final ScrollPane scrollDetalles = new ScrollPane();   // ← Añadido
+    private final HBox botonesBox = new HBox(15);
+    private final Label lblSplash = new Label("Ilustración");
+    private final Label lblBio = new Label("Texto del Tomo");
+    private final TextField searchField = new TextField();
+
     private Campeon campeonSeleccionado = null;
 
     public MainController(ChampionDAO championDAO, ObservableList<Campeon> campeonesList) {
@@ -60,7 +73,6 @@ public class MainController {
         Label tituloApp = new Label("LoreRuneTerra - Campeones de Runeterra");
         tituloApp.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #c8aa6e;");
 
-        TextField searchField = new TextField();
         searchField.setPromptText("Buscar por nombre...");
         searchField.setMaxWidth(350);
         searchField.setStyle("-fx-background-color: #2d2d2d; -fx-text-fill: white; -fx-prompt-text-fill: gray;");
@@ -128,115 +140,136 @@ public class MainController {
         table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(60);
 
-        // Panel de detalles
-        detallesPanel.setPadding(new Insets(0, 15, 15, 15));
-        detallesPanel.setStyle("-fx-background-color: #111111; -fx-border-color: #333; -fx-border-width: 0 0 0 1;");
+        // === LIBRO LITERAL ABIERTO CON ANIMACIÓN ===
+        bookContainer.setStyle("-fx-background-color: #0a0a0a;"); // mesa oscura
 
-        lblNombreDetalles.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #c8aa6e;");
-        lblTituloDetalles.setStyle("-fx-font-size: 16px; -fx-text-fill: #aaa; -fx-padding: 0 0 10 0;");
+        // Página izquierda (decorativa)
+        leftPage.setStyle("""
+            -fx-background-color: #1c1810;
+            -fx-background-radius: 8 0 0 8;
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, -10, 0);
+        """);
+        leftPage.setPrefWidth(320);
+        leftPage.setAlignment(Pos.CENTER);
+        Label leftText = new Label("Crónicas de Runeterra");
+        leftText.setStyle("-fx-font-size: 20px; -fx-text-fill: #8b7355; -fx-font-style: italic;");
+        leftPage.getChildren().add(leftText);
 
-        imgSplashDetalles.setFitWidth(500);
+        // Página derecha (contenido principal)
+        rightPage.setStyle("""
+            -fx-background-color: #1c1810;
+            -fx-background-radius: 0 8 8 0;
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, 10, 0);
+        """);
+        rightPage.setPadding(new Insets(40, 50, 50, 50));
+
+        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3; -fx-font-family: 'Cinzel' or serif;");
+        lblTituloDetalles.setStyle("-fx-font-size: 18px; -fx-text-fill: #b89e6e; -fx-font-style: italic;");
+
+        imgSplashDetalles.setFitWidth(480);
         imgSplashDetalles.setPreserveRatio(true);
-        imgSplashDetalles.setSmooth(true);
 
-        txtBiografia.setWrapText(true);
-        txtBiografia.setEditable(false);
-        txtBiografia.setPrefHeight(300);
-        txtBiografia.setStyle("-fx-control-inner-background: #222222; -fx-text-fill: white; -fx-font-size: 14px;");
+        txtBiografia.setStyle("""
+            -fx-control-inner-background: #1c1810;
+            -fx-text-fill: #d4c3a2;
+            -fx-font-size: 15px;
+            -fx-font-family: serif;
+            -fx-padding: 25;
+        """);
 
         scrollBio.setContent(txtBiografia);
         scrollBio.setFitToWidth(true);
         scrollBio.setStyle("-fx-background: transparent;");
 
-        HBox botonesBox = new HBox(10);
+        HBox botonesBox = new HBox(15);
         botonesBox.setAlignment(Pos.CENTER_RIGHT);
         botonesBox.getChildren().addAll(btnEditarBio, btnCerrarDetalles);
 
-        btnEditarBio.setStyle("-fx-background-color: #444; -fx-text-fill: white;");
-        btnCerrarDetalles.setStyle("-fx-background-color: #c62828; -fx-text-fill: white;");
+        btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3;");
+        btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3;");
 
-        Label lblSplash = new Label("Splash art");
-        lblSplash.setStyle("-fx-font-size: 14px; -fx-text-fill: #bbb;");
-
-        Label lblBio = new Label("Biografía");
-        lblBio.setStyle("-fx-font-size: 14px; -fx-text-fill: #bbb;");
-
-        detallesPanel.getChildren().addAll(
+        rightPage.getChildren().addAll(
                 lblNombreDetalles,
                 lblTituloDetalles,
-                lblSplash,
                 imgSplashDetalles,
-                lblBio,
+                new Label("Biografía:"),
                 scrollBio,
                 botonesBox
         );
 
-        scrollDetalles.setContent(detallesPanel);
-        scrollDetalles.setPadding(Insets.EMPTY);
-        scrollDetalles.setFitToWidth(true);
-        scrollDetalles.setFitToHeight(true);
-        scrollDetalles.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;");
-        scrollDetalles.setPannable(true);
-        scrollDetalles.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollDetalles.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        bookContainer.getChildren().addAll(leftPage, rightPage);
+        StackPane.setAlignment(leftPage, Pos.CENTER_LEFT);
+        StackPane.setAlignment(rightPage, Pos.CENTER_RIGHT);
+
+        scrollDetalles.setContent(bookContainer);
+        scrollDetalles.setStyle("-fx-background: transparent;");
 
         splitPane.getItems().addAll(table, scrollDetalles);
         root.setCenter(splitPane);
     }
 
     private void setupListeners() {
-        // Filtro de búsqueda (cuando tengamos searchField, lo añadimos aquí o lo pasamos como parámetro)
+        // Filtro de búsqueda
         FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
-        // searchField.textProperty().addListener(...) ← si lo tenemos, lo añadimos aquí
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(campeon -> {
+                if (newValue == null || newValue.trim().isEmpty()) return true;
+                String lowerCaseFilter = newValue.toLowerCase();
+                return campeon.getNombre().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
 
         SortedList<Campeon> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedData);
 
-        // Selección de campeón → transforma panel derecho en "libro"
+        // Selección de campeón → transforma panel derecho en "libro" + animación PROTOTIPO
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
 
-                // Actualizamos contenido dinámico (sin borrar botones)
-                lblNombreDetalles.setText(newCampeon.getNombre());
-                lblTituloDetalles.setText(newCampeon.getTitulo());
+                // Animación de pasar página (giro desde el centro)
+                RotateTransition pageFlip = new RotateTransition(Duration.millis(700), rightPage);
+                pageFlip.setAxis(Rotate.Y_AXIS);
+                pageFlip.setFromAngle(0);
+                pageFlip.setToAngle(90); // Giro completo como pasar hoja
+                pageFlip.setAutoReverse(true);
+                pageFlip.setCycleCount(2);
+                pageFlip.setOnFinished(event -> {
+                    // Actualizamos contenido DESPUÉS de la animación
+                    lblNombreDetalles.setText(newCampeon.getNombre());
+                    lblTituloDetalles.setText(newCampeon.getTitulo());
 
-                String key = newCampeon.getKey();
-                String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
-                try {
-                    String rutaLimpia = rutaSplash.replace("file:///", "");
-                    File file = new File(rutaLimpia);
-                    if (file.exists()) {
-                        imgSplashDetalles.setImage(new Image(file.toURI().toString()));
-                    } else {
-                        imgSplashDetalles.setImage(null);
-                    }
-                } catch (Exception ignored) {
-                    imgSplashDetalles.setImage(null);
-                }
+                    String key = newCampeon.getKey();
+                    String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
+                    try {
+                        String rutaLimpia = rutaSplash.replace("file:///", "");
+                        File file = new File(rutaLimpia);
+                        if (file.exists()) {
+                            imgSplashDetalles.setImage(new Image(file.toURI().toString()));
+                        } else {
+                            imgSplashDetalles.setImage(null);
+                        }
+                    } catch (Exception ignored) {}
 
-                imgSplashDetalles.setFitWidth(500);
-                imgSplashDetalles.setPreserveRatio(true);
-                imgSplashDetalles.setSmooth(true);
+                    String bio = championDAO.getBiografia(key);
+                    txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
 
-                String bio = championDAO.getBiografia(key);
-                txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
+                    btnEditarBio.setVisible(true);
+                    btnCerrarDetalles.setText("Cerrar libro");
 
-                // Aseguramos botones visibles y con texto correcto
-                btnEditarBio.setVisible(true);
-                btnEditarBio.setText("Editar biografía");
-                btnCerrarDetalles.setText("Cerrar libro");
+                    // Volvemos la página a 0 grados
+                    rightPage.setRotate(0);
+                });
+                pageFlip.play();
 
-                detallesPanel.setVisible(true);
-                detallesPanel.setManaged(true);
+                bookContainer.setVisible(true);
             } else {
-                detallesPanel.setVisible(false);
-                detallesPanel.setManaged(false);
+                bookContainer.setVisible(false);
             }
         });
 
-        // Botones (usamos BiographyEditorDialog)
+        // Botones
         btnEditarBio.setOnAction(e -> {
             if (campeonSeleccionado != null) {
                 BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
@@ -252,8 +285,7 @@ public class MainController {
     }
 
     private void ocultarDetalles() {
-        detallesPanel.setVisible(false);
-        detallesPanel.setManaged(false);
+        bookContainer.setVisible(false);
         campeonSeleccionado = null;
     }
 }
