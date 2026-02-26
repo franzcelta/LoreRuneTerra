@@ -3,6 +3,7 @@ package com.loreruneterra.controller;
 import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
 
+import com.loreruneterra.view.BiographyEditorDialog;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -184,16 +185,15 @@ public class MainController {
     }
 
     private void setupListeners() {
-        // Filtro de búsqueda (necesitamos searchField para el listener)
-        // Luego lo pasamos como parámetro desde MainApp o movemos el searchField a MainController
+        // Filtro de búsqueda (cuando tengamos searchField, lo añadimos aquí o lo pasamos como parámetro)
         FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
-        // searchField.textProperty().addListener(...) ← añadimos esto cuando tengamos searchField
+        // searchField.textProperty().addListener(...) ← si lo tenemos, lo añadimos aquí
 
         SortedList<Campeon> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedData);
 
-        // Selección de campeón → transformar panel derecho en "libro"
+        // Selección de campeón → transforma panel derecho en "libro"
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
@@ -223,6 +223,7 @@ public class MainController {
                 String bio = championDAO.getBiografia(key);
                 txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
 
+                // Aseguramos botones visibles y con texto correcto
                 btnEditarBio.setVisible(true);
                 btnEditarBio.setText("Editar biografía");
                 btnCerrarDetalles.setText("Cerrar libro");
@@ -235,10 +236,11 @@ public class MainController {
             }
         });
 
-        // Botones
+        // Botones (usamos BiographyEditorDialog)
         btnEditarBio.setOnAction(e -> {
             if (campeonSeleccionado != null) {
-                // abrirEditorLore(campeonSeleccionado);  ← Si lo tienes, llámalo aquí
+                BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
+                editor.show(campeonSeleccionado, txtBiografia);
             }
         });
 
