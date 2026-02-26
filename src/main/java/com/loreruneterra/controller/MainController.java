@@ -4,7 +4,10 @@ import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
 import com.loreruneterra.view.BiographyEditorDialog;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
+import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -20,7 +23,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javafx.scene.layout.*;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 
@@ -36,11 +38,9 @@ public class MainController {
     private final BorderPane root = new BorderPane();
     private final SplitPane splitPane = new SplitPane();
     private final TableView<Campeon> table = new TableView<>();
-    private final StackPane bookContainer = new StackPane();     // ← Añadido
-    private final VBox leftPage = new VBox(10);                   // ← Añadido
-    private final VBox rightPage = new VBox(20);                  // ← Añadido
-    private final Rectangle bookSpine = new Rectangle(30, 600);   // ← Añadido (lomo)
-    private final VBox detallesPanel = new VBox(10);              // ← en caso de usarse
+    private final StackPane bookContainer = new StackPane();
+    private final VBox leftPage = new VBox(10);
+    private final VBox rightPage = new VBox(20);
     private final Label lblNombreDetalles = new Label();
     private final Label lblTituloDetalles = new Label();
     private final ImageView imgSplashDetalles = new ImageView();
@@ -48,7 +48,7 @@ public class MainController {
     private final Button btnEditarBio = new Button("Editar biografía");
     private final Button btnCerrarDetalles = new Button("Cerrar libro");
     private final ScrollPane scrollBio = new ScrollPane();
-    private final ScrollPane scrollDetalles = new ScrollPane();   // ← Añadido
+    private final ScrollPane scrollDetalles = new ScrollPane();
     private final HBox botonesBox = new HBox(15);
     private final Label lblSplash = new Label("Ilustración");
     private final Label lblBio = new Label("Texto del Tomo");
@@ -65,7 +65,7 @@ public class MainController {
     }
 
     private void initializeUI() {
-        // Panel superior compacto
+        // Panel superior
         VBox topBox = new VBox(5);
         topBox.setPadding(new Insets(8));
         topBox.setStyle("-fx-background-color: #0f0f0f;");
@@ -97,27 +97,21 @@ public class MainController {
             @Override
             protected void updateItem(String url, boolean empty) {
                 super.updateItem(url, empty);
-
                 if (empty || url == null || url.trim().isEmpty()) {
                     setGraphic(null);
                     return;
                 }
-
                 try {
                     String rutaLimpia = url.replace("file:///", "");
                     File file = new File(rutaLimpia);
                     if (file.exists() && file.canRead()) {
                         imageView.setImage(new Image(file.toURI().toString()));
-                    } else {
-                        System.out.println("Imagen no encontrada: " + rutaLimpia);
-                        imageView.setImage(null);
                     }
                     imageView.setFitWidth(50);
                     imageView.setFitHeight(50);
                     imageView.setPreserveRatio(true);
                     imageView.setSmooth(true);
                 } catch (Exception e) {
-                    System.err.println("Error al cargar imagen: " + url);
                     imageView.setImage(null);
                 }
                 setGraphic(imageView);
@@ -140,30 +134,28 @@ public class MainController {
         table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(60);
 
-        // === LIBRO LITERAL ABIERTO CON ANIMACIÓN ===
-        bookContainer.setStyle("-fx-background-color: #0a0a0a;"); // mesa oscura
+        // === LIBRO ABIERTO CON EFECTO 3D ===
+        bookContainer.setStyle("-fx-background-color: #0a0a0a;");
 
-        // Página izquierda (decorativa)
+        // Página izquierda decorativa
         leftPage.setStyle("""
             -fx-background-color: #1c1810;
             -fx-background-radius: 8 0 0 8;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, -10, 0);
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, -15, 0);
         """);
         leftPage.setPrefWidth(320);
         leftPage.setAlignment(Pos.CENTER);
-        Label leftText = new Label("Crónicas de Runeterra");
-        leftText.setStyle("-fx-font-size: 20px; -fx-text-fill: #8b7355; -fx-font-style: italic;");
-        leftPage.getChildren().add(leftText);
+        leftPage.getChildren().add(new Label("Crónicas Antiguas"));
 
-        // Página derecha (contenido principal)
+        // Página derecha (contenido)
         rightPage.setStyle("""
             -fx-background-color: #1c1810;
             -fx-background-radius: 0 8 8 0;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, 10, 0);
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, 15, 0);
         """);
         rightPage.setPadding(new Insets(40, 50, 50, 50));
 
-        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3; -fx-font-family: 'Cinzel' or serif;");
+        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3;");
         lblTituloDetalles.setStyle("-fx-font-size: 18px; -fx-text-fill: #b89e6e; -fx-font-style: italic;");
 
         imgSplashDetalles.setFitWidth(480);
@@ -181,7 +173,6 @@ public class MainController {
         scrollBio.setFitToWidth(true);
         scrollBio.setStyle("-fx-background: transparent;");
 
-        HBox botonesBox = new HBox(15);
         botonesBox.setAlignment(Pos.CENTER_RIGHT);
         botonesBox.getChildren().addAll(btnEditarBio, btnCerrarDetalles);
 
@@ -223,20 +214,23 @@ public class MainController {
         sortedData.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedData);
 
-        // Selección de campeón → transforma panel derecho en "libro" + animación PROTOTIPO
+        // Selección de campeón → transición suave de página (fade + slide)
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
 
-                // Animación de pasar página (giro desde el centro)
-                RotateTransition pageFlip = new RotateTransition(Duration.millis(700), rightPage);
-                pageFlip.setAxis(Rotate.Y_AXIS);
-                pageFlip.setFromAngle(0);
-                pageFlip.setToAngle(90); // Giro completo como pasar hoja
-                pageFlip.setAutoReverse(true);
-                pageFlip.setCycleCount(2);
-                pageFlip.setOnFinished(event -> {
-                    // Actualizamos contenido DESPUÉS de la animación
+                // Transición suave: fade-out + slide-in
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), rightPage);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+
+                TranslateTransition slideOut = new TranslateTransition(Duration.millis(200), rightPage);
+                slideOut.setFromX(0);
+                slideOut.setToX(100); // Desplazamiento suave hacia la derecha
+
+                ParallelTransition out = new ParallelTransition(fadeOut, slideOut);
+                out.setOnFinished(event -> {
+                    // Actualizamos contenido después del fade-out
                     lblNombreDetalles.setText(newCampeon.getNombre());
                     lblTituloDetalles.setText(newCampeon.getTitulo());
 
@@ -252,18 +246,30 @@ public class MainController {
                         }
                     } catch (Exception ignored) {}
 
+                    imgSplashDetalles.setFitWidth(480);
+                    imgSplashDetalles.setPreserveRatio(true);
+                    imgSplashDetalles.setSmooth(true);
+
                     String bio = championDAO.getBiografia(key);
                     txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
 
                     btnEditarBio.setVisible(true);
                     btnCerrarDetalles.setText("Cerrar libro");
 
-                    // Volvemos la página a 0 grados
-                    rightPage.setRotate(0);
-                });
-                pageFlip.play();
+                    // Fade-in + slide-in de la nueva página
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(300), rightPage);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
 
-                bookContainer.setVisible(true);
+                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(300), rightPage);
+                    slideIn.setFromX(-100); // Entra desde la izquierda
+                    slideIn.setToX(0);
+
+                    ParallelTransition in = new ParallelTransition(fadeIn, slideIn);
+                    in.play();
+                });
+
+                out.play();
             } else {
                 bookContainer.setVisible(false);
             }
