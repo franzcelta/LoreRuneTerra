@@ -134,10 +134,12 @@ public class MainController {
         TableColumn<Campeon, String> colTitulo = new TableColumn<>("Título");
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
 
-        TableColumn<Campeon, String> colKey = new TableColumn<>("Key");
-        colKey.setCellValueFactory(new PropertyValueFactory<>("key"));
+        //TableColumn<Campeon, String> colKey = new TableColumn<>("Key");
+        //colKey.setCellValueFactory(new PropertyValueFactory<>("key"));
 
-        table.getColumns().addAll(colImagen, colNombre, colTitulo, colKey);
+        //table.getColumns().addAll(colImagen, colNombre, colTitulo, colKey);
+        table.getColumns().addAll(colImagen, colNombre, colTitulo);
+
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("Cargando campeones..."));
