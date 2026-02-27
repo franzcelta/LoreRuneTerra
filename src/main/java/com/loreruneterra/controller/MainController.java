@@ -174,23 +174,22 @@ public class MainController {
 
         txtBiografia.setWrapText(true);
         txtBiografia.setEditable(false);
-        txtBiografia.setPrefHeight(550);  // Más alto para que ocupe más espacio
-        txtBiografia.setPrefWidth(620);   // Más ancho para legibilidad
-
+        txtBiografia.setPrefHeight(600); // ← altura aumentada para que se vea grande
+        txtBiografia.setPrefWidth(620);  // ← ancho aumentado para legibilidad
         txtBiografia.setStyle("""
-            -fx-control-inner-background: #1c1810;  // Fondo oscuro (negro/gris muy oscuro)
-            -fx-background-color: #1c1810;          // Fondo sólido para evitar transparencia
-            -fx-text-fill: #e8d5a3;                 // Texto claro (dorado/beige) para contraste
-            -fx-font-size: 18px;                    // Fuente más grande
-            -fx-font-family: 'Cinzel' or serif;
-            -fx-padding: 35;                        // Más espacio interno
-            -fx-line-spacing: 8;                    // Separación entre líneas para comodidad
-        """);
+    -fx-control-inner-background: #1c1810;  // Fondo oscuro sólido
+    -fx-background-color: #1c1810;
+    -fx-text-fill: #e8d5a3;                // Texto claro para contraste
+    -fx-font-size: 18px;                   // Fuente más grande
+    -fx-font-family: 'Cinzel' or serif;
+    -fx-padding: 35;                       // Más margen interno
+    -fx-line-spacing: 8;                   // Más separación entre líneas
+""");
 
         scrollBio.setContent(txtBiografia);
         scrollBio.setFitToWidth(true);
-        scrollBio.setFitToHeight(true);  // Se ajusta al espacio disponible
-        scrollBio.setStyle("-fx-background: #1c1810;");  // Fondo oscuro también en el scroll
+        scrollBio.setFitToHeight(true); // ← se ajusta al espacio disponible
+        scrollBio.setStyle("-fx-background: #1c1810;"); // Fondo oscuro en el scroll
         scrollBio.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollBio.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
@@ -249,8 +248,6 @@ public class MainController {
         table.setItems(sortedData);
 
 
-        // Selección de campeón → transición suave de página (fade + slide)
-        // Selección de campeón → transforma panel derecho en "libro" + animación
         // Selección de campeón → transición suave de página (fade + slide recuperada)
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
