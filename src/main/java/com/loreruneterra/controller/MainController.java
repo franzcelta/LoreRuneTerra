@@ -172,31 +172,46 @@ public class MainController {
         imgSplashDetalles.setFitWidth(480);
         imgSplashDetalles.setPreserveRatio(true);
 
+        txtBiografia.setWrapText(true);
+        txtBiografia.setEditable(false);
+        txtBiografia.setPrefHeight(550);  // Más alto para que ocupe más espacio
+        txtBiografia.setPrefWidth(620);   // Más ancho para legibilidad
+
         txtBiografia.setStyle("""
-            -fx-control-inner-background: #1c1810;
-            -fx-text-fill: #d4c3a2;
-            -fx-font-size: 15px;
-            -fx-font-family: serif;
-            -fx-padding: 25;
+            -fx-control-inner-background: #1c1810;  // Fondo oscuro (negro/gris muy oscuro)
+            -fx-background-color: #1c1810;          // Fondo sólido para evitar transparencia
+            -fx-text-fill: #e8d5a3;                 // Texto claro (dorado/beige) para contraste
+            -fx-font-size: 18px;                    // Fuente más grande
+            -fx-font-family: 'Cinzel' or serif;
+            -fx-padding: 35;                        // Más espacio interno
+            -fx-line-spacing: 8;                    // Separación entre líneas para comodidad
         """);
 
         scrollBio.setContent(txtBiografia);
         scrollBio.setFitToWidth(true);
-        scrollBio.setStyle("-fx-background: transparent;");
-
-        botonesBox.setAlignment(Pos.CENTER_RIGHT);
-        botonesBox.getChildren().addAll(btnEditarBio, btnCerrarDetalles);
+        scrollBio.setFitToHeight(true);  // Se ajusta al espacio disponible
+        scrollBio.setStyle("-fx-background: #1c1810;");  // Fondo oscuro también en el scroll
+        scrollBio.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollBio.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3;");
         btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3;");
 
+        // Botones (creamos y añadimos solo una vez, al final de la página derecha)
+        botonesBox.setAlignment(Pos.CENTER_RIGHT);
+        botonesBox.getChildren().addAll(btnEditarBio, btnCerrarDetalles);
+
+        btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
+        btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
+
+        // Añade TODO al panel derecho (incluyendo botones al final)
         rightPage.getChildren().addAll(
                 lblNombreDetalles,
                 lblTituloDetalles,
                 imgSplashDetalles,
                 new Label("Biografía:"),
                 scrollBio,
-                botonesBox
+                botonesBox  // ← botones aquí, al final
         );
 
         bookContainer.getChildren().addAll(leftPage, rightPage);
@@ -235,6 +250,8 @@ public class MainController {
 
 
         // Selección de campeón → transición suave de página (fade + slide)
+        // Selección de campeón → transforma panel derecho en "libro" + animación
+        // Selección de campeón → transición suave de página (fade + slide recuperada)
         table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
@@ -300,7 +317,23 @@ public class MainController {
             }
         });
 
+        btnEditarBio.setOnAction(e -> {
+            if (campeonSeleccionado != null) {
+                BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
+                editor.show(campeonSeleccionado, txtBiografia);
+            } else {
+                // Opcional: mostrar alerta si no hay campeón seleccionado
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Atención");
+                alert.setHeaderText("No hay campeón seleccionado");
+                alert.setContentText("Selecciona un campeón para editar su biografía.");
+                alert.showAndWait();
+            }
+        });
+
         btnCerrarDetalles.setOnAction(e -> ocultarDetalles());
+
+
     }
 
     public BorderPane getRoot() {
