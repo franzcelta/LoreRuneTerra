@@ -39,7 +39,7 @@ public class BiographyEditorDialog {
         dialog.showAndWait().ifPresent(nuevoTexto -> {
             if (nuevoTexto != null && !nuevoTexto.trim().isEmpty()) {
                 championDAO.saveBiografia(campeon.getKey(), nuevoTexto);
-                String bio = championDAO.getBiografia(campeon.getKey());
+                String bio = championDAO.getBiografiaCompleta(campeon.getKey());
                 txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
             }
         });

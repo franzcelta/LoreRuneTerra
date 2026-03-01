@@ -58,7 +58,7 @@ public class ChampionBookView {
         bioArea.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6; -fx-font-size: 15px;");
 
         // Cargar bio usando el DAO (no MainApp)
-        String bio = championDAO.getBiografia(campeon.getKey());
+        String bio = championDAO.getBiografiaCompleta(campeon.getKey());
         bioArea.setText(bio != null && !bio.trim().isEmpty() ? bio : "No hay biografía guardada aún.");
 
         contenido.getChildren().addAll(splashGrande, bioArea);

@@ -56,6 +56,8 @@ public class MainController {
     private final Label lblBio = new Label("Texto del Tomo");
     private final TextField searchField = new TextField();
     private final ScrollPane scrollDetalles = new ScrollPane();
+    private boolean bioCompletaVisible = false;
+    private final Button btnLeerCompleta = new Button("Leer Biografía completa");
 
     private Campeon campeonSeleccionado = null;
 
@@ -134,13 +136,7 @@ public class MainController {
         TableColumn<Campeon, String> colTitulo = new TableColumn<>("Título");
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
 
-        //TableColumn<Campeon, String> colKey = new TableColumn<>("Key");
-        //colKey.setCellValueFactory(new PropertyValueFactory<>("key"));
-
-        //table.getColumns().addAll(colImagen, colNombre, colTitulo, colKey);
         table.getColumns().addAll(colImagen, colNombre, colTitulo);
-
-
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("Cargando campeones..."));
         table.setFixedCellSize(60);
@@ -150,10 +146,10 @@ public class MainController {
 
         // Página izquierda (decorativa)
         leftPage.setStyle("""
-            -fx-background-color: #1c1810;
-            -fx-background-radius: 8 0 0 8;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, -15, 0);
-        """);
+        -fx-background-color: #1c1810;
+        -fx-background-radius: 8 0 0 8;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, -15, 0);
+    """);
         leftPage.setPrefWidth(320);
         leftPage.setAlignment(Pos.CENTER);
         Label leftText = new Label("Crónicas de Runeterra");
@@ -162,10 +158,10 @@ public class MainController {
 
         // Página derecha (contenido principal)
         rightPage.setStyle("""
-            -fx-background-color: #1c1810;
-            -fx-background-radius: 0 8 8 0;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, 15, 0);
-        """);
+        -fx-background-color: #1c1810;
+        -fx-background-radius: 0 8 8 0;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, 15, 0);
+    """);
         rightPage.setPadding(new Insets(40, 50, 50, 50));
 
         lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3; -fx-font-family: 'Cinzel' or serif;");
@@ -176,34 +172,33 @@ public class MainController {
 
         txtBiografia.setWrapText(true);
         txtBiografia.setEditable(false);
-        txtBiografia.setPrefHeight(600); // ← altura aumentada para que se vea grande
-        txtBiografia.setPrefWidth(620);  // ← ancho aumentado para legibilidad
+        txtBiografia.setPrefHeight(600);
+        txtBiografia.setPrefWidth(620);
         txtBiografia.setStyle("""
-    -fx-control-inner-background: #1c1810;  // Fondo oscuro sólido
-    -fx-background-color: #1c1810;
-    -fx-text-fill: #e8d5a3;                // Texto claro para contraste
-    -fx-font-size: 18px;                   // Fuente más grande
-    -fx-font-family: 'Cinzel' or serif;
-    -fx-padding: 35;                       // Más margen interno
-    -fx-line-spacing: 8;                   // Más separación entre líneas
-""");
+        -fx-control-inner-background: #1c1810;
+        -fx-background-color: #1c1810;
+        -fx-text-fill: #e8d5a3;
+        -fx-font-size: 18px;
+        -fx-font-family: serif;
+        -fx-padding: 35;
+        -fx-line-spacing: 8;
+    """);
 
         scrollBio.setContent(txtBiografia);
         scrollBio.setFitToWidth(true);
-        scrollBio.setFitToHeight(true); // ← se ajusta al espacio disponible
-        scrollBio.setStyle("-fx-background: #1c1810;"); // Fondo oscuro en el scroll
+        scrollBio.setFitToHeight(true);
+        scrollBio.setStyle("-fx-background: #1c1810;");
         scrollBio.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollBio.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3;");
-        btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3;");
-
-        // Botones (creamos y añadimos solo una vez, al final de la página derecha)
+        // Botones abajo (solo una vez)
         botonesBox.setAlignment(Pos.CENTER_RIGHT);
-        botonesBox.getChildren().addAll(btnEditarBio, btnCerrarDetalles);
+        botonesBox.getChildren().addAll(btnEditarBio, btnLeerCompleta, btnCerrarDetalles);
 
         btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
         btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
+        btnLeerCompleta.setStyle("-fx-background-color: #3a5f8d; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-family: serif;");
+        btnLeerCompleta.setVisible(false); // se muestra solo si hay bio larga
 
         // Añade TODO al panel derecho (incluyendo botones al final)
         rightPage.getChildren().addAll(
@@ -212,7 +207,7 @@ public class MainController {
                 imgSplashDetalles,
                 new Label("Biografía:"),
                 scrollBio,
-                botonesBox  // ← botones aquí, al final
+                botonesBox
         );
 
         bookContainer.getChildren().addAll(leftPage, rightPage);
@@ -262,7 +257,7 @@ public class MainController {
 
                 TranslateTransition slideOut = new TranslateTransition(Duration.millis(250), rightPage);
                 slideOut.setFromX(0);
-                slideOut.setToX(50); // Desplazamiento suave hacia la derecha
+                slideOut.setToX(50);
 
                 ParallelTransition out = new ParallelTransition(fadeOut, slideOut);
                 out.setOnFinished(event -> {
@@ -288,14 +283,34 @@ public class MainController {
                     imgSplashDetalles.setPreserveRatio(true);
                     imgSplashDetalles.setSmooth(true);
 
-                    String bio = championDAO.getBiografia(key);
-                    txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
+                    // ← AQUÍ VA EL NUEVO CÓDIGO DE BIO CORTA/COMPLETA
+                    String bioCorta = championDAO.getBiografiaCorta(key);
+                    String bioCompleta = championDAO.getBiografiaCompleta(key);
+
+                    txtBiografia.setText(bioCorta != null ? bioCorta : "No hay biografía corta guardada.");
+
+                    btnLeerCompleta.setVisible(bioCompleta != null && !bioCompleta.equals(bioCorta));
+                    btnLeerCompleta.setText("Leer Biografía completa");
+                    bioCompletaVisible = false;
+
+                    // Toggle del botón
+                    btnLeerCompleta.setOnAction(e -> {
+                        if (bioCompletaVisible) {
+                            txtBiografia.setText(bioCorta);
+                            btnLeerCompleta.setText("Leer Biografía completa");
+                            bioCompletaVisible = false;
+                        } else {
+                            txtBiografia.setText(bioCompleta);
+                            btnLeerCompleta.setText("Ver resumen");
+                            bioCompletaVisible = true;
+                        }
+                    });
 
                     btnEditarBio.setVisible(true);
                     btnEditarBio.setText("Editar biografía");
                     btnCerrarDetalles.setText("Cerrar libro");
 
-                    // Fade-in + slide-in de la nueva página (entra desde la izquierda)
+                    // Fade-in + slide-in de la nueva página
                     FadeTransition fadeIn = new FadeTransition(Duration.millis(350), rightPage);
                     fadeIn.setFromValue(0.0);
                     fadeIn.setToValue(1.0);
