@@ -17,7 +17,7 @@ public class ChampionBookView {
 
     private final ChampionDAO championDAO = new ChampionDAO();  // ← Instancia propia del DAO
 
-    public void mostrarLibro(Campeon campeon, Stage ownerStage) {
+    public void mostrarLibro(Campeon campeon, Stage ownerStage, String bio) {
         Stage libroStage = new Stage();
         libroStage.setTitle(campeon.getNombre() + " - Libro de Runeterra");
         libroStage.initOwner(ownerStage);
@@ -58,7 +58,7 @@ public class ChampionBookView {
         bioArea.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6; -fx-font-size: 15px;");
 
         // Cargar bio usando el DAO (no MainApp)
-        String bio = championDAO.getBiografiaCompleta(campeon.getKey());
+        //String bio = championDAO.getBiografiaCompleta(campeon.getKey());
         bioArea.setText(bio != null && !bio.trim().isEmpty() ? bio : "No hay biografía guardada aún.");
 
         contenido.getChildren().addAll(splashGrande, bioArea);

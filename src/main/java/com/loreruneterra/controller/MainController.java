@@ -1,5 +1,6 @@
 package com.loreruneterra.controller;
 
+import com.loreruneterra.view.ChampionBookView;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -59,7 +60,10 @@ public class MainController {
     private boolean bioCompletaVisible = false;
     private final Button btnLeerCompleta = new Button("Leer Biografía completa");
 
+
     private Campeon campeonSeleccionado = null;
+    private String bioCortaActual = null;
+    private String bioCompletaActual = null;
 
     public MainController(ChampionDAO championDAO, ObservableList<Campeon> campeonesList) {
         this.championDAO = championDAO;
@@ -70,6 +74,8 @@ public class MainController {
     }
 
     private void initializeUI() {
+
+
         // Panel superior compacto
         VBox topBox = new VBox(5);
         topBox.setPadding(new Insets(8));
@@ -198,9 +204,9 @@ public class MainController {
         btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
         btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
         btnLeerCompleta.setStyle("-fx-background-color: #3a5f8d; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-family: serif;");
-        btnLeerCompleta.setVisible(false); // se muestra solo si hay bio larga
+        btnLeerCompleta.setVisible(false); // inicialmente oculto
 
-        // Añade TODO al panel derecho (incluyendo botones al final)
+// Añade TODO al panel derecho (incluyendo botones al final)
         rightPage.getChildren().addAll(
                 lblNombreDetalles,
                 lblTituloDetalles,
@@ -219,6 +225,37 @@ public class MainController {
 
         splitPane.getItems().addAll(table, scrollDetalles);
         root.setCenter(splitPane);
+
+        // Forzar visibilidad y ajuste del contenedor del libro
+        bookContainer.setVisible(true);
+        bookContainer.setManaged(true);
+        rightPage.setVisible(true);
+        rightPage.setManaged(true);
+
+// Asegurar que el scroll muestre todo
+        scrollDetalles.setVisible(true);
+        scrollDetalles.setManaged(true);
+        scrollDetalles.setFitToWidth(true);
+        scrollDetalles.setFitToHeight(true);
+        scrollDetalles.setVvalue(1.0); // scroll al final para ver botones
+
+        //XXXX
+        btnEditarBio.setOnAction(e -> {
+            if (campeonSeleccionado != null) {
+                BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
+                editor.show(campeonSeleccionado, txtBiografia);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Atención");
+                alert.setHeaderText("No hay campeón seleccionado");
+                alert.setContentText("Selecciona un campeón para editar su biografía.");
+                alert.showAndWait();
+            }
+        });
+
+
+
+
     }
 
     private void setupListeners() {
@@ -250,7 +287,44 @@ public class MainController {
             if (newCampeon != null) {
                 campeonSeleccionado = newCampeon;
 
-                // Fade-out + slide-out de la página actual
+                String key = newCampeon.getKey();
+
+                bioCortaActual = championDAO.getBiografiaCorta(key);
+                bioCompletaActual = championDAO.getBiografiaCompleta(key);
+
+                txtBiografia.setText(bioCortaActual != null ? bioCortaActual : "No hay biografía corta guardada.");
+
+                // Mostrar botón si hay completa
+                btnLeerCompleta.setVisible(bioCompletaActual != null);
+                btnLeerCompleta.setText("Leer Biografía completa");
+                bioCompletaVisible = false;
+
+                // Resto de tu código (splashart, botones, animación)
+                lblNombreDetalles.setText(newCampeon.getNombre());
+                lblTituloDetalles.setText(newCampeon.getTitulo());
+
+                String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
+                try {
+                    String rutaLimpia = rutaSplash.replace("file:///", "");
+                    File file = new File(rutaLimpia);
+                    if (file.exists()) {
+                        imgSplashDetalles.setImage(new Image(file.toURI().toString()));
+                    } else {
+                        imgSplashDetalles.setImage(null);
+                    }
+                } catch (Exception ignored) {
+                    imgSplashDetalles.setImage(null);
+                }
+
+                imgSplashDetalles.setFitWidth(500);
+                imgSplashDetalles.setPreserveRatio(true);
+                imgSplashDetalles.setSmooth(true);
+
+                btnEditarBio.setVisible(true);
+                btnEditarBio.setText("Editar biografía");
+                btnCerrarDetalles.setText("Cerrar libro");
+
+                // Tu animación fade + slide (se mantiene igual)
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(250), rightPage);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
@@ -261,56 +335,6 @@ public class MainController {
 
                 ParallelTransition out = new ParallelTransition(fadeOut, slideOut);
                 out.setOnFinished(event -> {
-                    // Actualizamos contenido DESPUÉS del fade-out
-                    lblNombreDetalles.setText(newCampeon.getNombre());
-                    lblTituloDetalles.setText(newCampeon.getTitulo());
-
-                    String key = newCampeon.getKey();
-                    String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
-                    try {
-                        String rutaLimpia = rutaSplash.replace("file:///", "");
-                        File file = new File(rutaLimpia);
-                        if (file.exists()) {
-                            imgSplashDetalles.setImage(new Image(file.toURI().toString()));
-                        } else {
-                            imgSplashDetalles.setImage(null);
-                        }
-                    } catch (Exception ignored) {
-                        imgSplashDetalles.setImage(null);
-                    }
-
-                    imgSplashDetalles.setFitWidth(500);
-                    imgSplashDetalles.setPreserveRatio(true);
-                    imgSplashDetalles.setSmooth(true);
-
-                    // ← AQUÍ VA EL NUEVO CÓDIGO DE BIO CORTA/COMPLETA
-                    String bioCorta = championDAO.getBiografiaCorta(key);
-                    String bioCompleta = championDAO.getBiografiaCompleta(key);
-
-                    txtBiografia.setText(bioCorta != null ? bioCorta : "No hay biografía corta guardada.");
-
-                    btnLeerCompleta.setVisible(bioCompleta != null && !bioCompleta.equals(bioCorta));
-                    btnLeerCompleta.setText("Leer Biografía completa");
-                    bioCompletaVisible = false;
-
-                    // Toggle del botón
-                    btnLeerCompleta.setOnAction(e -> {
-                        if (bioCompletaVisible) {
-                            txtBiografia.setText(bioCorta);
-                            btnLeerCompleta.setText("Leer Biografía completa");
-                            bioCompletaVisible = false;
-                        } else {
-                            txtBiografia.setText(bioCompleta);
-                            btnLeerCompleta.setText("Ver resumen");
-                            bioCompletaVisible = true;
-                        }
-                    });
-
-                    btnEditarBio.setVisible(true);
-                    btnEditarBio.setText("Editar biografía");
-                    btnCerrarDetalles.setText("Cerrar libro");
-
-                    // Fade-in + slide-in de la nueva página
                     FadeTransition fadeIn = new FadeTransition(Duration.millis(350), rightPage);
                     fadeIn.setFromValue(0.0);
                     fadeIn.setToValue(1.0);
@@ -331,21 +355,21 @@ public class MainController {
             }
         });
 
-        btnEditarBio.setOnAction(e -> {
-            if (campeonSeleccionado != null) {
-                BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
-                editor.show(campeonSeleccionado, txtBiografia);
-            } else {
-                // Opcional: mostrar alerta si no hay campeón seleccionado
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Atención");
-                alert.setHeaderText("No hay campeón seleccionado");
-                alert.setContentText("Selecciona un campeón para editar su biografía.");
-                alert.showAndWait();
-            }
-        });
 
         btnCerrarDetalles.setOnAction(e -> ocultarDetalles());
+
+        // Toggle del botón "Leer Biografía completa" (se asigna solo una vez)
+        btnLeerCompleta.setOnAction(e -> {
+            if (bioCompletaVisible) {
+                txtBiografia.setText(bioCortaActual);
+                btnLeerCompleta.setText("Leer Biografía completa");
+                bioCompletaVisible = false;
+            } else {
+                txtBiografia.setText(bioCompletaActual);
+                btnLeerCompleta.setText("Ver resumen");
+                bioCompletaVisible = true;
+            }
+        });
 
 
     }

@@ -11,15 +11,13 @@ import java.util.List;
 
 public class ChampionDAO {
 
-    // Carga TODOS los campeones
+    // Carga todos los campeones
     public List<Campeon> getAllCampeones() {
         List<Campeon> lista = new ArrayList<>();
-
         try (Connection conn = DatabaseConnector.getConnection()) {
             String sql = "SELECT key, nombre, titulo, imagen FROM campeones ORDER BY nombre ASC";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
                 Campeon c = new Campeon(
                         rs.getString("key"),
@@ -32,7 +30,6 @@ public class ChampionDAO {
         } catch (SQLException e) {
             System.err.println("Error al cargar campeones: " + e.getMessage());
         }
-
         return lista;
     }
 
@@ -50,7 +47,6 @@ public class ChampionDAO {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, keyCampeon);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 return rs.getString("biografia_corta");
             }
@@ -74,7 +70,6 @@ public class ChampionDAO {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, keyCampeon);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 return rs.getString("biografia_completa");
             }
@@ -115,10 +110,5 @@ public class ChampionDAO {
         } catch (SQLException e) {
             System.err.println("Error guardando biografías: " + e.getMessage());
         }
-    }
-
-    // Versión compatible con el código antiguo (usamos la misma como corta por ahora)
-    public void saveBiografia(String keyCampeon, String textoCompleto) {
-        saveBiografia(keyCampeon, textoCompleto, textoCompleto);
     }
 }

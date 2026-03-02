@@ -2,7 +2,11 @@ package com.loreruneterra.view;
 
 import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -15,33 +19,51 @@ public class BiographyEditorDialog {
     }
 
     public void show(Campeon campeon, TextArea txtBiografia) {
-        if (campeon == null) return;
+        Stage editorStage = new Stage();
+        editorStage.setTitle("Editar biografías de " + campeon.getNombre());
+        editorStage.initModality(Modality.APPLICATION_MODAL);
 
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Editar Biografía - " + campeon.getNombre());
-        dialog.setHeaderText("Pega la biografía completa y la historia corta desde Universe");
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(15));
 
-        TextArea textArea = new TextArea(txtBiografia.getText());
-        textArea.setWrapText(true);
-        textArea.setPrefHeight(400);
-        textArea.setPrefWidth(600);
+        // TextArea para biografía corta
+        Label lblCorta = new Label("Biografía corta (resumen narrativo):");
+        TextArea areaCorta = new TextArea();
+        areaCorta.setWrapText(true);
+        areaCorta.setPrefHeight(200);
+        areaCorta.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6;");
 
-        dialog.getDialogPane().setContent(textArea);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // TextArea para biografía completa
+        Label lblCompleta = new Label("Biografía completa (historia detallada):");
+        TextArea areaCompleta = new TextArea();
+        areaCompleta.setWrapText(true);
+        areaCompleta.setPrefHeight(400);
+        areaCompleta.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6;");
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == ButtonType.OK) {
-                return textArea.getText();
-            }
-            return null;
+        // Cargar versiones actuales
+        String bioCorta = championDAO.getBiografiaCorta(campeon.getKey());
+        areaCorta.setText(bioCorta != null ? bioCorta : "");
+
+        String bioCompleta = championDAO.getBiografiaCompleta(campeon.getKey());
+        areaCompleta.setText(bioCompleta != null ? bioCompleta : "");
+
+        Button btnGuardar = new Button("Guardar cambios");
+        btnGuardar.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white;");
+        btnGuardar.setOnAction(e -> {
+            championDAO.saveBiografia(campeon.getKey(), areaCorta.getText(), areaCompleta.getText());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Guardado");
+            alert.setHeaderText(null);
+            alert.setContentText("Biografías guardadas correctamente.");
+            alert.showAndWait();
+            editorStage.close();
         });
 
-        dialog.showAndWait().ifPresent(nuevoTexto -> {
-            if (nuevoTexto != null && !nuevoTexto.trim().isEmpty()) {
-                championDAO.saveBiografia(campeon.getKey(), nuevoTexto);
-                String bio = championDAO.getBiografiaCompleta(campeon.getKey());
-                txtBiografia.setText(bio != null && !bio.trim().isEmpty() ? bio.replace("\n", "\n\n") : "No hay biografía guardada aún.");
-            }
-        });
+        layout.getChildren().addAll(lblCorta, areaCorta, lblCompleta, areaCompleta, btnGuardar);
+        layout.setAlignment(Pos.CENTER);
+
+        Scene scene = new Scene(layout, 800, 700);
+        editorStage.setScene(scene);
+        editorStage.show();
     }
 }
