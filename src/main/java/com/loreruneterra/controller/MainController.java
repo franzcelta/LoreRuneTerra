@@ -5,6 +5,7 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import com.loreruneterra.db.ChampionDAO;
@@ -33,7 +34,11 @@ import javafx.util.Duration;
 import java.io.File;
 import java.util.List;
 
+
+
 public class MainController {
+
+
 
     private final ChampionDAO championDAO;
     private final ObservableList<Campeon> campeonesList;
@@ -61,9 +66,21 @@ public class MainController {
     private final Button btnLeerCompleta = new Button("Leer Biografía completa");
 
 
+    private boolean bioPrimeraVisible = false;  // para toggle de la primera persona
+    private final Button btnPrimeraPersona = new Button("Leer en primera persona");  // botón extra opcional
+
+
     private Campeon campeonSeleccionado = null;
+    private Stage primaryStage;  // ← este campo guarda la ventana principal
     private String bioCortaActual = null;
     private String bioCompletaActual = null;
+    private String bioPrimeraActual = null;
+
+    public void setPrimaryStage(Stage stage) {
+        this.primaryStage = stage;
+    }
+
+
 
     public MainController(ChampionDAO championDAO, ObservableList<Campeon> campeonesList) {
         this.championDAO = championDAO;
@@ -74,8 +91,6 @@ public class MainController {
     }
 
     private void initializeUI() {
-
-
         // Panel superior compacto
         VBox topBox = new VBox(5);
         topBox.setPadding(new Insets(8));
@@ -108,7 +123,6 @@ public class MainController {
             @Override
             protected void updateItem(String url, boolean empty) {
                 super.updateItem(url, empty);
-
                 if (empty || url == null || url.trim().isEmpty()) {
                     setGraphic(null);
                     return;
@@ -199,14 +213,17 @@ public class MainController {
 
         // Botones abajo (solo una vez)
         botonesBox.setAlignment(Pos.CENTER_RIGHT);
-        botonesBox.getChildren().addAll(btnEditarBio, btnLeerCompleta, btnCerrarDetalles);
+        botonesBox.getChildren().addAll(btnEditarBio, btnLeerCompleta, btnPrimeraPersona, btnCerrarDetalles);
 
         btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
         btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
         btnLeerCompleta.setStyle("-fx-background-color: #3a5f8d; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-family: serif;");
-        btnLeerCompleta.setVisible(false); // inicialmente oculto
+        btnPrimeraPersona.setStyle("-fx-background-color: #6a1b9a; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-family: serif;");
 
-// Añade TODO al panel derecho (incluyendo botones al final)
+        btnLeerCompleta.setVisible(false); // inicialmente oculto
+        btnPrimeraPersona.setVisible(false); // inicialmente oculto
+
+        // Añade TODO al panel derecho (incluyendo botones al final)
         rightPage.getChildren().addAll(
                 lblNombreDetalles,
                 lblTituloDetalles,
@@ -226,25 +243,18 @@ public class MainController {
         splitPane.getItems().addAll(table, scrollDetalles);
         root.setCenter(splitPane);
 
-        // Forzar visibilidad y ajuste del contenedor del libro
-        bookContainer.setVisible(true);
-        bookContainer.setManaged(true);
-        rightPage.setVisible(true);
-        rightPage.setManaged(true);
 
-// Asegurar que el scroll muestre todo
-        scrollDetalles.setVisible(true);
-        scrollDetalles.setManaged(true);
-        scrollDetalles.setFitToWidth(true);
-        scrollDetalles.setFitToHeight(true);
-        scrollDetalles.setVvalue(1.0); // scroll al final para ver botones
+        btnCerrarDetalles.setOnAction(e -> ocultarDetalles());
 
-        //XXXX
         btnEditarBio.setOnAction(e -> {
+            System.out.println("Botón 'Editar biografía' clicado"); // ← log para ver si el evento se dispara
+
             if (campeonSeleccionado != null) {
+                System.out.println("Abriendo diálogo para: " + campeonSeleccionado.getNombre());
                 BiographyEditorDialog editor = new BiographyEditorDialog(championDAO);
-                editor.show(campeonSeleccionado, txtBiografia);
+                editor.show(campeonSeleccionado);
             } else {
+                System.out.println("No hay campeón seleccionado");
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Atención");
                 alert.setHeaderText("No hay campeón seleccionado");
@@ -253,6 +263,33 @@ public class MainController {
             }
         });
 
+        // Toggle del botón "Leer Biografía completa" (se asigna solo una vez)
+        btnLeerCompleta.setOnAction(e -> {
+            if (bioCompletaVisible) {
+                txtBiografia.setText(bioCortaActual);
+                btnLeerCompleta.setText("Leer Biografía completa");
+                bioCompletaVisible = false;
+            } else {
+                txtBiografia.setText(bioCompletaActual);
+                btnLeerCompleta.setText("Ver resumen");
+                bioCompletaVisible = true;
+            }
+        });
+
+
+
+// Toggle para "Leer en primera persona" (solo si existe)
+        btnPrimeraPersona.setOnAction(e -> {
+            if (bioPrimeraVisible) {
+                txtBiografia.setText(bioCortaActual);
+                btnPrimeraPersona.setText("Leer en primera persona");
+                bioPrimeraVisible = false;
+            } else {
+                txtBiografia.setText(bioPrimeraActual);
+                btnPrimeraPersona.setText("Ver resumen");
+                bioPrimeraVisible = true;
+            }
+        });
 
 
 
@@ -291,13 +328,18 @@ public class MainController {
 
                 bioCortaActual = championDAO.getBiografiaCorta(key);
                 bioCompletaActual = championDAO.getBiografiaCompleta(key);
+                bioPrimeraActual = championDAO.getBiografiaPrimeraPersona(key);
 
-                txtBiografia.setText(bioCortaActual != null ? bioCortaActual : "No hay biografía corta guardada.");
+                txtBiografia.setText(bioCortaActual != null && !bioCortaActual.trim().isEmpty() ? bioCortaActual : "No hay biografía corta guardada aún.");
 
-                // Mostrar botón si hay completa
-                btnLeerCompleta.setVisible(bioCompletaActual != null);
+                // Visibilidad de botones
+                btnLeerCompleta.setVisible(bioCompletaActual != null && !bioCompletaActual.trim().isEmpty());
                 btnLeerCompleta.setText("Leer Biografía completa");
                 bioCompletaVisible = false;
+
+                btnPrimeraPersona.setVisible(bioPrimeraActual != null && !bioPrimeraActual.trim().isEmpty());
+                btnPrimeraPersona.setText("Leer en primera persona");
+                bioPrimeraVisible = false;
 
                 // Resto de tu código (splashart, botones, animación)
                 lblNombreDetalles.setText(newCampeon.getNombre());
@@ -324,7 +366,11 @@ public class MainController {
                 btnEditarBio.setText("Editar biografía");
                 btnCerrarDetalles.setText("Cerrar libro");
 
-                // Tu animación fade + slide (se mantiene igual)
+                // Forzar scroll al final para ver botones abajo
+                scrollBio.setVvalue(1.0);
+                scrollDetalles.setVvalue(1.0);
+
+                // Animación fade + slide
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(250), rightPage);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
@@ -356,20 +402,7 @@ public class MainController {
         });
 
 
-        btnCerrarDetalles.setOnAction(e -> ocultarDetalles());
 
-        // Toggle del botón "Leer Biografía completa" (se asigna solo una vez)
-        btnLeerCompleta.setOnAction(e -> {
-            if (bioCompletaVisible) {
-                txtBiografia.setText(bioCortaActual);
-                btnLeerCompleta.setText("Leer Biografía completa");
-                bioCompletaVisible = false;
-            } else {
-                txtBiografia.setText(bioCompletaActual);
-                btnLeerCompleta.setText("Ver resumen");
-                bioCompletaVisible = true;
-            }
-        });
 
 
     }

@@ -16,8 +16,12 @@ public class MainApp extends Application {
     private final ObservableList<Campeon> campeonesList = FXCollections.observableArrayList();
     private final ChampionDAO championDAO = new ChampionDAO();
 
+    private Stage primaryStage;  // ← campo para guardar la ventana principal
+
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;  // ← asignamos directamente aquí (opcional, pero recomendado)
+
         // Cargar datos
         List<Campeon> lista = championDAO.getAllCampeones();
         campeonesList.setAll(lista);
@@ -25,7 +29,10 @@ public class MainApp extends Application {
         // Crear el controlador
         MainController controller = new MainController(championDAO, campeonesList);
 
-        // Crear escena con el root que devuelve el controlador
+        // Pasar la stage principal al controlador (para abrir ventanas modales)
+        controller.setPrimaryStage(primaryStage);
+
+        // Crear escena
         Scene scene = new Scene(controller.getRoot(), 1300, 800);
         scene.setFill(javafx.scene.paint.Color.BLACK);
 
@@ -35,6 +42,11 @@ public class MainApp extends Application {
         primaryStage.setTitle("LoreRuneTerra");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    // Setter (fuera del método start)
+    public void setPrimaryStage(Stage stage) {
+        this.primaryStage = stage;
     }
 
     public static void main(String[] args) {

@@ -18,7 +18,7 @@ public class BiographyEditorDialog {
         this.championDAO = championDAO;
     }
 
-    public void show(Campeon campeon, TextArea txtBiografia) {
+    public void show(Campeon campeon) {
         Stage editorStage = new Stage();
         editorStage.setTitle("Editar biografías de " + campeon.getNombre());
         editorStage.initModality(Modality.APPLICATION_MODAL);
@@ -26,43 +26,41 @@ public class BiographyEditorDialog {
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(15));
 
-        // TextArea para biografía corta
-        Label lblCorta = new Label("Biografía corta (resumen narrativo):");
+        Label lblCorta = new Label("Biografía corta (intro narrativa atractiva):");
         TextArea areaCorta = new TextArea();
         areaCorta.setWrapText(true);
-        areaCorta.setPrefHeight(200);
-        areaCorta.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6;");
+        areaCorta.setPrefHeight(150);
 
-        // TextArea para biografía completa
         Label lblCompleta = new Label("Biografía completa (historia detallada):");
         TextArea areaCompleta = new TextArea();
         areaCompleta.setWrapText(true);
-        areaCompleta.setPrefHeight(400);
-        areaCompleta.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6;");
+        areaCompleta.setPrefHeight(300);
+
+        Label lblPrimera = new Label("Biografía en primera persona (solo para algunos campeones):");
+        TextArea areaPrimera = new TextArea();
+        areaPrimera.setWrapText(true);
+        areaPrimera.setPrefHeight(300);
 
         // Cargar versiones actuales
-        String bioCorta = championDAO.getBiografiaCorta(campeon.getKey());
-        areaCorta.setText(bioCorta != null ? bioCorta : "");
+        areaCorta.setText(championDAO.getBiografiaCorta(campeon.getKey()) != null ? championDAO.getBiografiaCorta(campeon.getKey()) : "");
+        areaCompleta.setText(championDAO.getBiografiaCompleta(campeon.getKey()) != null ? championDAO.getBiografiaCompleta(campeon.getKey()) : "");
+        areaPrimera.setText(championDAO.getBiografiaPrimeraPersona(campeon.getKey()) != null ? championDAO.getBiografiaPrimeraPersona(campeon.getKey()) : "");
 
-        String bioCompleta = championDAO.getBiografiaCompleta(campeon.getKey());
-        areaCompleta.setText(bioCompleta != null ? bioCompleta : "");
-
-        Button btnGuardar = new Button("Guardar cambios");
-        btnGuardar.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white;");
+        Button btnGuardar = new Button("Guardar todas las versiones");
         btnGuardar.setOnAction(e -> {
-            championDAO.saveBiografia(campeon.getKey(), areaCorta.getText(), areaCompleta.getText());
+            championDAO.saveBiografia(campeon.getKey(), areaCorta.getText(), areaCompleta.getText(), areaPrimera.getText());
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Guardado");
             alert.setHeaderText(null);
-            alert.setContentText("Biografías guardadas correctamente.");
+            alert.setContentText("Las 3 biografías guardadas correctamente.");
             alert.showAndWait();
             editorStage.close();
         });
 
-        layout.getChildren().addAll(lblCorta, areaCorta, lblCompleta, areaCompleta, btnGuardar);
+        layout.getChildren().addAll(lblCorta, areaCorta, lblCompleta, areaCompleta, lblPrimera, areaPrimera, btnGuardar);
         layout.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(layout, 800, 700);
+        Scene scene = new Scene(layout, 900, 900);
         editorStage.setScene(scene);
         editorStage.show();
     }
