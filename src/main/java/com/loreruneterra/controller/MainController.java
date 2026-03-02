@@ -367,8 +367,8 @@ public class MainController {
                 btnCerrarDetalles.setText("Cerrar libro");
 
                 // Forzar scroll al final para ver botones abajo
-                scrollBio.setVvalue(1.0);
-                scrollDetalles.setVvalue(1.0);
+                scrollBio.setVvalue(0.0);
+                scrollDetalles.setVvalue(0.0);
 
                 // Animación fade + slide
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(250), rightPage);
