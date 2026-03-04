@@ -415,4 +415,4 @@ public class MainController {
         bookContainer.setVisible(false);
         campeonSeleccionado = null;
     }
-} //Añadidas varias biografías de campeones. (hasta AZIR)
+} //Añadidas todas las biografías basicas + relatos basicos de los campeones.
