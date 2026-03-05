@@ -27,7 +27,8 @@
 /* Fondo de la barra de encabezados completa (las "cajas" de arriba) - marrón oscuro arenoso */
 .table-view .column-header-background {
     -fx-background-color: #3a2a1a;   /* Marrón oscuro arenoso base */
-    -fx-background-image: linear-gradient(to bottom, #4a3a2a, #2c1f0f); /* Textura arenosa/castillo viejo */
+    /* En lugar de -fx-background-image con gradiente (que no funciona) */
+    -fx-background-color: linear-gradient(to bottom, #4a3a2a, #2c1f0f); /* Textura arenosa/castillo viejo */
     -fx-background-radius: 4;
     -fx-border-color: #4a3a2a;
     -fx-border-width: 0 0 2 0;

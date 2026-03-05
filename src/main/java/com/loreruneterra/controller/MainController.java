@@ -1,5 +1,7 @@
 package com.loreruneterra.controller;
 
+import com.loreruneterra.db.PlacesDAO;
+import com.loreruneterra.model.Lugar;
 import com.loreruneterra.view.ChampionBookView;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -75,6 +77,8 @@ public class MainController {
     private String bioCortaActual = null;
     private String bioCompletaActual = null;
     private String bioPrimeraActual = null;
+
+    private final PlacesDAO placesDAO = new PlacesDAO();
 
     public void setPrimaryStage(Stage stage) {
         this.primaryStage = stage;
@@ -241,7 +245,19 @@ public class MainController {
         scrollDetalles.setStyle("-fx-background: transparent;");
 
         splitPane.getItems().addAll(table, scrollDetalles);
-        root.setCenter(splitPane);
+        TabPane tabPane = new TabPane();
+
+        Tab tabCampeones = new Tab("Campeones");
+        tabCampeones.setContent(splitPane); // tu tabla y libro actual
+
+        Tab tabLugares = new Tab("Lugares");
+        tabLugares.setContent(crearTablaLugares()); // nueva tabla de lugares
+
+        Tab tabMapa = new Tab("Mapa de Runeterra");
+        tabMapa.setContent(crearMapaInteractivo()); // nueva vista con mapa
+
+        tabPane.getTabs().addAll(tabCampeones, tabLugares, tabMapa);
+        root.setCenter(tabPane);
 
 
         btnCerrarDetalles.setOnAction(e -> ocultarDetalles());
@@ -293,6 +309,91 @@ public class MainController {
 
 
 
+    }
+
+    private VBox crearTablaLugares() {
+         // ← añade este campo al principio de la clase
+
+// Luego en crearTablaLugares()
+        ObservableList<Lugar> lugaresList = FXCollections.observableArrayList(placesDAO.getAllLugares());
+
+        TableView<Lugar> tableLugares = new TableView<>();
+        tableLugares.setItems(lugaresList);
+
+        TableColumn<Lugar, String> colNombre = new TableColumn<>("Nombre");
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+
+        TableColumn<Lugar, String> colDescripcion = new TableColumn<>("Descripción");
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+
+        tableLugares.getColumns().addAll(colNombre, colDescripcion);
+        tableLugares.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableLugares.setStyle("-fx-background-color: #0d1624;");
+
+        return new VBox(tableLugares);
+    }
+
+
+    private VBox crearMapaInteractivo() {
+        VBox layout = new VBox(10);
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #0d1624;");
+
+        // Ruta 1: la que tú me diste (con espacios y mayúsculas exactas)
+        String rutaOriginal = "C:\\Users\\franz\\Documents\\LoreRuneTerra ASSETS\\img\\mapa.png";
+        File mapFileOriginal = new File(rutaOriginal);
+
+        System.out.println("Ruta original (tú): " + rutaOriginal);
+        System.out.println("¿Existe físicamente (original)? " + mapFileOriginal.exists());
+        System.out.println("¿Se puede leer (original)? " + mapFileOriginal.canRead());
+        System.out.println("Ruta absoluta que ve Java (original): " + mapFileOriginal.getAbsolutePath());
+
+        // Ruta 2: versión limpia con / y file:///
+        String mapPath = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/mapa.png";
+        System.out.println("\nIntentando cargar con file:/// : " + mapPath);
+
+        Image mapImageFile = new Image(mapPath);
+
+        if (mapImageFile.isError() || mapImageFile.getException() != null) {
+            System.out.println("ERROR al cargar con Image:");
+            if (mapImageFile.getException() != null) {
+                System.out.println("Excepción: " + mapImageFile.getException().getMessage());
+            } else {
+                System.out.println("Error desconocido (imagen no válida)");
+            }
+
+            // Mensaje visible en la UI para que lo veas sin consola
+            Label errorLabel = new Label("No se pudo cargar el mapa.\n\nComprueba:\n1. ¿Existe mapa.png en:\n   C:\\Users\\franz\\Documents\\LoreRuneTerra ASSETS\\img\\\n2. ¿Nombre exacto (mayúsculas/minúsculas)?\n3. ¿Archivo bloqueado? (Propiedades → Desbloquear)");
+            errorLabel.setStyle("-fx-text-fill: red; -fx-font-size: 18px; -fx-padding: 20; -fx-alignment: center;");
+            layout.getChildren().add(errorLabel);
+        } else {
+            System.out.println("¡MAPA CARGADO CORRECTAMENTE!");
+            System.out.println("Tamaño: " + mapImageFile.getWidth() + " x " + mapImageFile.getHeight());
+        }
+
+        ImageView mapImage = new ImageView(mapImageFile);
+        mapImage.setFitWidth(1200);
+        mapImage.setPreserveRatio(true);
+        mapImage.setSmooth(true);
+
+        mapImage.setOnMouseClicked(e -> {
+            double x = e.getX();
+            double y = e.getY();
+            System.out.println("Clic en mapa: x=" + x + ", y=" + y);
+            // Aquí irán tus if para regiones (Demacia, Noxus, etc.)
+        });
+
+        layout.getChildren().add(mapImage);
+        return layout;
+    }
+
+    // Método auxiliar para mostrar detalles de un lugar (puedes cambiar Alert por una ventana bonita)
+    private void mostrarDetallesLugar(String nombre, String descripcion) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(nombre);
+        alert.setHeaderText(null);
+        alert.setContentText(descripcion);
+        alert.showAndWait();
     }
 
     private void setupListeners() {

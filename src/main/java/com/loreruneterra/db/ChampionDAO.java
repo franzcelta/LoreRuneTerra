@@ -105,4 +105,7 @@ public class ChampionDAO {
             System.err.println("Error guardando biografías: " + e.getMessage());
         }
     }
+
+
+
 }
