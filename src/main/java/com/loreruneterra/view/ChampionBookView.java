@@ -10,14 +10,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.io.File;
 
 public class ChampionBookView {
 
-    private final ChampionDAO championDAO = new ChampionDAO();  // ← Instancia propia del DAO
+    private final ChampionDAO championDAO = new ChampionDAO();
 
-    public void mostrarLibro(Campeon campeon, Stage ownerStage, String bio) {
+    public void mostrarLibro(Campeon campeon, Stage ownerStage) {
         Stage libroStage = new Stage();
         libroStage.setTitle(campeon.getNombre() + " - Libro de Runeterra");
         libroStage.initOwner(ownerStage);
@@ -34,6 +33,7 @@ public class ChampionBookView {
         VBox contenido = new VBox(20);
         contenido.setAlignment(Pos.CENTER);
 
+        // Splashart grande
         ImageView splashGrande = new ImageView();
         String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + campeon.getKey() + "_0.jpg";
         try {
@@ -41,8 +41,6 @@ public class ChampionBookView {
             File file = new File(rutaLimpia);
             if (file.exists() && file.canRead()) {
                 splashGrande.setImage(new Image(file.toURI().toString()));
-            } else {
-                System.out.println("Splashart no encontrado: " + rutaLimpia);
             }
         } catch (Exception e) {
             System.err.println("Error cargando splashart: " + e.getMessage());
@@ -51,27 +49,44 @@ public class ChampionBookView {
         splashGrande.setPreserveRatio(true);
         splashGrande.setSmooth(true);
 
+        // Área de texto
         TextArea bioArea = new TextArea();
         bioArea.setWrapText(true);
         bioArea.setEditable(false);
         bioArea.setPrefHeight(400);
-        bioArea.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6; -fx-font-size: 15px;");
-
-        // Cargar bio usando el DAO (no MainApp)
-        //String bio = championDAO.getBiografiaCompleta(campeon.getKey());
-        bioArea.setText(bio != null && !bio.trim().isEmpty() ? bio : "No hay biografía guardada aún.");
+        bioArea.setStyle("-fx-control-inner-background: #1c1c2e; -fx-text-fill: #e6e6e6; -fx-font-size: 15px; -fx-padding: 15;");
 
         contenido.getChildren().addAll(splashGrande, bioArea);
         libroRoot.setCenter(contenido);
 
+        // Botones para cambiar entre las 3 versiones
+        HBox botonesBox = new HBox(10);
+        botonesBox.setAlignment(Pos.CENTER);
+
+        Button btnCorta = new Button("Versión Corta");
+        Button btnCompleta = new Button("Versión Completa");
+        Button btnPrimera = new Button("Primera Persona");
+
+        btnCorta.setOnAction(e -> bioArea.setText(championDAO.getBiografiaCorta(campeon.getKey())));
+        btnCompleta.setOnAction(e -> bioArea.setText(championDAO.getBiografiaCompleta(campeon.getKey())));
+        btnPrimera.setOnAction(e -> bioArea.setText(championDAO.getBiografiaPrimeraPersona(campeon.getKey())));
+
+        botonesBox.getChildren().addAll(btnCorta, btnCompleta, btnPrimera);
+
+        // Botón cerrar
         Button cerrarBtn = new Button("Cerrar libro");
         cerrarBtn.setStyle("-fx-background-color: #c62828; -fx-text-fill: white;");
         cerrarBtn.setOnAction(e -> libroStage.close());
-        libroRoot.setBottom(cerrarBtn);
-        BorderPane.setAlignment(cerrarBtn, Pos.CENTER);
+
+        VBox bottomBox = new VBox(10, botonesBox, cerrarBtn);
+        bottomBox.setAlignment(Pos.CENTER);
+        libroRoot.setBottom(bottomBox);
 
         Scene libroScene = new Scene(libroRoot, 1000, 800);
         libroStage.setScene(libroScene);
         libroStage.show();
+
+        // Cargar por defecto la versión corta
+        bioArea.setText(championDAO.getBiografiaCorta(campeon.getKey()));
     }
 }

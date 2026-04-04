@@ -1,356 +1,147 @@
 package com.loreruneterra.controller;
 
 import com.loreruneterra.db.ChampionDAO;
-import com.loreruneterra.db.PlacesDAO;
 import com.loreruneterra.model.Campeon;
-import com.loreruneterra.model.Lugar;
-import com.loreruneterra.view.BiographyEditorDialog;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.TranslateTransition;
-import javafx.collections.FXCollections;
+import com.loreruneterra.view.ChampionBookView;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.io.File;
-import java.util.List;
 
 public class MainController {
 
     private final ChampionDAO championDAO;
-    private final PlacesDAO placesDAO = new PlacesDAO();
     private final ObservableList<Campeon> campeonesList;
-
-    // Nodos principales
     private final BorderPane root = new BorderPane();
-    private final SplitPane splitPane = new SplitPane();
-    private final TableView<Campeon> table = new TableView<>();
-    private final StackPane bookContainer = new StackPane();
-    private final VBox leftPage = new VBox(10);
-    private final VBox rightPage = new VBox(20);
-    private final Label lblNombreDetalles = new Label();
-    private final Label lblTituloDetalles = new Label();
-    private final ImageView imgSplashDetalles = new ImageView();
-    private final TextArea txtBiografia = new TextArea("Selecciona un campeón para ver su biografía.");
-    private final Button btnEditarBio = new Button("Editar biografía");
-    private final Button btnCerrarDetalles = new Button("Cerrar libro");
-    private final ScrollPane scrollBio = new ScrollPane();
-    private final HBox botonesBox = new HBox(15);
-    private final TextField searchField = new TextField();
-    private final ScrollPane scrollDetalles = new ScrollPane();
 
-    private boolean bioCompletaVisible = false;
-    private boolean bioPrimeraVisible = false;
-
-    private final Button btnLeerCompleta = new Button("Leer Biografía completa");
-    private final Button btnPrimeraPersona = new Button("Leer en primera persona");
-
-    private Campeon campeonSeleccionado = null;
     private Stage primaryStage;
 
-    private String bioCortaActual = null;
-    private String bioCompletaActual = null;
-    private String bioPrimeraActual = null;
+    public MainController(ChampionDAO championDAO, ObservableList<Campeon> campeonesList) {
+        this.championDAO = championDAO;
+        this.campeonesList = campeonesList;
+        showWelcomeScreen();
+    }
 
     public void setPrimaryStage(Stage stage) {
         this.primaryStage = stage;
     }
 
-    public MainController(ChampionDAO championDAO, ObservableList<Campeon> campeonesList) {
-        this.championDAO = championDAO;
-        this.campeonesList = campeonesList;
-        initializeUI();
-        setupListeners();
+    private void showWelcomeScreen() {
+        VBox welcome = new VBox(60);
+        welcome.setAlignment(Pos.CENTER);
+        welcome.setStyle("-fx-background-color: #0a0f1c;");
+
+        Label title = new Label("LoreRuneTerra");
+        title.setStyle("-fx-font-size: 60px; -fx-font-weight: bold; -fx-text-fill: #c8aa6e;");
+
+        Label subtitle = new Label("Explora las historias y leyendas de Runeterra");
+        subtitle.setStyle("-fx-font-size: 22px; -fx-text-fill: #a09b8c;");
+
+        Button startButton = new Button("Entrar al Mundo");
+        startButton.setStyle("-fx-background-color: #c8aa6e; -fx-text-fill: #0a0f1c; -fx-font-size: 28px; -fx-padding: 25 70; -fx-background-radius: 15;");
+        startButton.setOnAction(e -> showChampionScreen());
+
+        welcome.getChildren().addAll(title, subtitle, startButton);
+        root.setCenter(welcome);
     }
 
-    private void initializeUI() {
-        // Panel superior
-        VBox topBox = new VBox(5);
-        topBox.setPadding(new Insets(8));
-        topBox.setStyle("-fx-background-color: #0f0f0f;");
+    private void showChampionScreen() {
+        System.out.println("=== Entrando a pantalla de campeones ===");
 
-        Label tituloApp = new Label("LoreRuneTerra - Campeones de Runeterra");
-        tituloApp.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #c8aa6e;");
+        HBox topBar = new HBox(15);
+        topBar.setPadding(new Insets(15, 20, 15, 20));
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setStyle("-fx-background-color: #0f0f0f;");
 
-        searchField.setPromptText("Buscar por nombre...");
-        searchField.setMaxWidth(350);
+        Button btnVolver = new Button("← Volver al Menú");
+        btnVolver.setOnAction(e -> showWelcomeScreen());
+
+        Label titulo = new Label("Campeones de Runeterra");
+        titulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3;");
+
+        TextField searchField = new TextField();
+        searchField.setPromptText("Buscar campeón...");
+        searchField.setMaxWidth(380);
         searchField.setStyle("-fx-background-color: #2d2d2d; -fx-text-fill: white; -fx-prompt-text-fill: gray;");
 
-        topBox.getChildren().addAll(tituloApp, searchField);
-        root.setTop(topBox);
+        Region spacer1 = new Region();
+        Region spacer2 = new Region();
+        HBox.setHgrow(spacer1, Priority.ALWAYS);
+        HBox.setHgrow(spacer2, Priority.ALWAYS);
 
-        // SplitPane
-        splitPane.setDividerPositions(0.65);
-        splitPane.setStyle("-fx-background-color: transparent;");
+        topBar.getChildren().addAll(btnVolver, spacer1, titulo, spacer2, searchField);
 
-        // Tabla de campeones
-        table.setItems(campeonesList);
-        table.setStyle("-fx-background-color: #0d1624;");
+        FlowPane flow = new FlowPane();
+        flow.setHgap(30);
+        flow.setVgap(30);
+        flow.setPadding(new Insets(40));
+        flow.setStyle("-fx-background-color: #0d1624;");
 
-        TableColumn<Campeon, String> colImagen = new TableColumn<>("Imagen");
-        colImagen.setPrefWidth(70);
-        colImagen.setCellFactory(param -> new TableCell<Campeon, String>() {
-            private final ImageView imageView = new ImageView();
+        for (Campeon c : campeonesList) {
+            flow.getChildren().add(createChampionCard(c));
+        }
 
-            @Override
-            protected void updateItem(String url, boolean empty) {
-                super.updateItem(url, empty);
-                if (empty || url == null || url.trim().isEmpty()) {
-                    setGraphic(null);
-                    return;
+        // Buscador funcional
+        searchField.textProperty().addListener((obs, old, newValue) -> {
+            String filter = (newValue == null ? "" : newValue).toLowerCase().trim();
+            flow.getChildren().clear();
+
+            for (Campeon c : campeonesList) {
+                if (c.getNombre().toLowerCase().contains(filter)) {
+                    flow.getChildren().add(createChampionCard(c));
                 }
-                try {
-                    String rutaLimpia = url.replace("file:///", "");
-                    File file = new File(rutaLimpia);
-                    if (file.exists() && file.canRead()) {
-                        imageView.setImage(new Image(file.toURI().toString()));
-                    } else {
-                        System.out.println("Imagen no encontrada: " + rutaLimpia);
-                        imageView.setImage(null);
-                    }
-                    imageView.setFitWidth(50);
-                    imageView.setFitHeight(50);
-                    imageView.setPreserveRatio(true);
-                    imageView.setSmooth(true);
-                } catch (Exception e) {
-                    System.err.println("Error al cargar imagen: " + url);
-                    imageView.setImage(null);
-                }
-                setGraphic(imageView);
             }
         });
-        colImagen.setCellValueFactory(new PropertyValueFactory<>("imagen"));
 
-        TableColumn<Campeon, String> colNombre = new TableColumn<>("Nombre");
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        ScrollPane scroll = new ScrollPane(flow);
+        scroll.setFitToWidth(true);
 
-        TableColumn<Campeon, String> colTitulo = new TableColumn<>("Título");
-        colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+        VBox main = new VBox(topBar, scroll);
+        root.setCenter(main);
 
-        table.getColumns().addAll(colImagen, colNombre, colTitulo);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        table.setPlaceholder(new Label("Cargando campeones..."));
-        table.setFixedCellSize(60);
-
-        // === LIBRO ABIERTO ===
-        bookContainer.setStyle("-fx-background-color: #0a0a0a;");
-
-        leftPage.setStyle("""
-            -fx-background-color: #1c1810;
-            -fx-background-radius: 8 0 0 8;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, -15, 0);
-        """);
-        leftPage.setPrefWidth(320);
-        leftPage.setAlignment(Pos.CENTER);
-        leftPage.getChildren().add(new Label("Crónicas de Runeterra"));
-
-        rightPage.setStyle("""
-            -fx-background-color: #1c1810;
-            -fx-background-radius: 0 8 8 0;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 30, 0.6, 15, 0);
-        """);
-        rightPage.setPadding(new Insets(40, 50, 50, 50));
-
-        lblNombreDetalles.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3; -fx-font-family: 'Cinzel' or serif;");
-        lblTituloDetalles.setStyle("-fx-font-size: 18px; -fx-text-fill: #b89e6e; -fx-font-style: italic;");
-
-        imgSplashDetalles.setFitWidth(480);
-        imgSplashDetalles.setPreserveRatio(true);
-
-        txtBiografia.setWrapText(true);
-        txtBiografia.setEditable(false);
-        txtBiografia.setPrefHeight(600);
-        txtBiografia.setPrefWidth(620);
-        txtBiografia.setStyle("""
-            -fx-control-inner-background: #1c1810;
-            -fx-background-color: #1c1810;
-            -fx-text-fill: #e8d5a3;
-            -fx-font-size: 18px;
-            -fx-font-family: serif;
-            -fx-padding: 35;
-            -fx-line-spacing: 8;
-        """);
-
-        scrollBio.setContent(txtBiografia);
-        scrollBio.setFitToWidth(true);
-        scrollBio.setFitToHeight(true);
-        scrollBio.setStyle("-fx-background: #1c1810;");
-        scrollBio.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollBio.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-        botonesBox.setAlignment(Pos.CENTER_RIGHT);
-        botonesBox.getChildren().addAll(btnEditarBio, btnLeerCompleta, btnPrimeraPersona, btnCerrarDetalles);
-
-        btnEditarBio.setStyle("-fx-background-color: #4a3c2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
-        btnCerrarDetalles.setStyle("-fx-background-color: #8b2a2a; -fx-text-fill: #e8d5a3; -fx-font-size: 14px; -fx-font-family: serif;");
-        btnLeerCompleta.setStyle("-fx-background-color: #3a5f8d; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-family: serif;");
-        btnPrimeraPersona.setStyle("-fx-background-color: #6a1b9a; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-family: serif;");
-
-        btnLeerCompleta.setVisible(false);
-        btnPrimeraPersona.setVisible(false);
-
-        rightPage.getChildren().addAll(
-                lblNombreDetalles,
-                lblTituloDetalles,
-                imgSplashDetalles,
-                new Label("Biografía:"),
-                scrollBio,
-                botonesBox
-        );
-
-        bookContainer.getChildren().addAll(leftPage, rightPage);
-        StackPane.setAlignment(leftPage, Pos.CENTER_LEFT);
-        StackPane.setAlignment(rightPage, Pos.CENTER_RIGHT);
-
-        scrollDetalles.setContent(bookContainer);
-        scrollDetalles.setStyle("-fx-background: transparent;");
-
-        splitPane.getItems().addAll(table, scrollDetalles);
-
-        // TabPane (sin mapa)
-        TabPane tabPane = new TabPane();
-        Tab tabCampeones = new Tab("Campeones");
-        tabCampeones.setContent(splitPane);
-
-        Tab tabLugares = new Tab("Lugares");
-        tabLugares.setContent(crearTablaLugares());
-
-        tabPane.getTabs().addAll(tabCampeones, tabLugares);
-
-        root.setCenter(tabPane);
+        System.out.println("=== Pantalla de campeones cargada con buscador ===");
     }
 
-    private VBox crearTablaLugares() {
-        ObservableList<Lugar> lugaresList = FXCollections.observableArrayList(placesDAO.getAllLugares());
+    private VBox createChampionCard(Campeon campeon) {
+        VBox card = new VBox(12);
+        card.setAlignment(Pos.CENTER);
+        card.setPrefWidth(200);
+        card.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 15; -fx-padding: 15;");
 
-        TableView<Lugar> tableLugares = new TableView<>();
-        tableLugares.setItems(lugaresList);
-
-        TableColumn<Lugar, String> colNombre = new TableColumn<>("Nombre");
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-
-        TableColumn<Lugar, String> colDescripcion = new TableColumn<>("Descripción");
-        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
-
-        tableLugares.getColumns().addAll(colNombre, colDescripcion);
-        tableLugares.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableLugares.setStyle("-fx-background-color: #0d1624;");
-
-        return new VBox(tableLugares);
-    }
-
-    private void setupListeners() {
-        // Filtro de búsqueda
-        FilteredList<Campeon> filteredData = new FilteredList<>(campeonesList, p -> true);
-
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(campeon -> {
-                if (newValue == null || newValue.trim().isEmpty()) return true;
-                String lowerCaseFilter = newValue.toLowerCase();
-                return campeon.getNombre().toLowerCase().contains(lowerCaseFilter);
-            });
-        });
-
-        SortedList<Campeon> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(table.comparatorProperty());
-        table.setItems(sortedData);
-
-        // Listener de selección
-        table.getSelectionModel().selectedItemProperty().addListener((obs, old, newCampeon) -> {
-            if (newCampeon != null) {
-                campeonSeleccionado = newCampeon;
-
-                String key = newCampeon.getKey();
-
-                bioCortaActual = championDAO.getBiografiaCorta(key);
-                bioCompletaActual = championDAO.getBiografiaCompleta(key);
-                bioPrimeraActual = championDAO.getBiografiaPrimeraPersona(key);
-
-                txtBiografia.setText(bioCortaActual != null && !bioCortaActual.trim().isEmpty() ? bioCortaActual : "No hay biografía corta guardada aún.");
-
-                btnLeerCompleta.setVisible(bioCompletaActual != null && !bioCompletaActual.trim().isEmpty());
-                btnLeerCompleta.setText("Leer Biografía completa");
-                bioCompletaVisible = false;
-
-                btnPrimeraPersona.setVisible(bioPrimeraActual != null && !bioPrimeraActual.trim().isEmpty());
-                btnPrimeraPersona.setText("Leer en primera persona");
-                bioPrimeraVisible = false;
-
-                lblNombreDetalles.setText(newCampeon.getNombre());
-                lblTituloDetalles.setText(newCampeon.getTitulo());
-
-                String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + key + "_0.jpg";
-                try {
-                    String rutaLimpia = rutaSplash.replace("file:///", "");
-                    File file = new File(rutaLimpia);
-                    if (file.exists()) {
-                        imgSplashDetalles.setImage(new Image(file.toURI().toString()));
-                    } else {
-                        imgSplashDetalles.setImage(null);
-                    }
-                } catch (Exception ignored) {
-                    imgSplashDetalles.setImage(null);
-                }
-
-                imgSplashDetalles.setFitWidth(500);
-                imgSplashDetalles.setPreserveRatio(true);
-                imgSplashDetalles.setSmooth(true);
-
-                btnEditarBio.setVisible(true);
-                btnEditarBio.setText("Editar biografía");
-                btnCerrarDetalles.setText("Cerrar libro");
-
-                scrollBio.setVvalue(0.0);
-                scrollDetalles.setVvalue(0.0);
-
-                // Animación
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(250), rightPage);
-                fadeOut.setFromValue(1.0);
-                fadeOut.setToValue(0.0);
-
-                TranslateTransition slideOut = new TranslateTransition(Duration.millis(250), rightPage);
-                slideOut.setFromX(0);
-                slideOut.setToX(50);
-
-                ParallelTransition out = new ParallelTransition(fadeOut, slideOut);
-                out.setOnFinished(event -> {
-                    FadeTransition fadeIn = new FadeTransition(Duration.millis(350), rightPage);
-                    fadeIn.setFromValue(0.0);
-                    fadeIn.setToValue(1.0);
-
-                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(350), rightPage);
-                    slideIn.setFromX(-50);
-                    slideIn.setToX(0);
-
-                    ParallelTransition in = new ParallelTransition(fadeIn, slideIn);
-                    in.play();
-                });
-
-                out.play();
-
-                bookContainer.setVisible(true);
-            } else {
-                bookContainer.setVisible(false);
+        ImageView img = new ImageView();
+        try {
+            String ruta = campeon.getImagen().replace("file:///", "");
+            File file = new File(ruta);
+            if (file.exists()) {
+                img.setImage(new Image(file.toURI().toString()));
             }
+        } catch (Exception ignored) {}
+
+        img.setFitWidth(170);
+        img.setFitHeight(170);
+        img.setPreserveRatio(true);
+
+        Label name = new Label(campeon.getNombre());
+        name.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        card.getChildren().addAll(img, name);
+
+        card.setOnMouseClicked(e -> {
+            System.out.println("Clic en: " + campeon.getNombre());
+            ChampionBookView view = new ChampionBookView();
+            view.mostrarLibro(campeon, primaryStage);
         });
+
+        return card;
     }
 
     public BorderPane getRoot() {
         return root;
-    }
-
-    private void ocultarDetalles() {
-        bookContainer.setVisible(false);
-        campeonSeleccionado = null;
     }
 }
