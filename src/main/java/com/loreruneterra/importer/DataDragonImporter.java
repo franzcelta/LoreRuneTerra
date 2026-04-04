@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class DataDragonImporter {
 
     // Ruta exacta del Json de campeones
-    private static final String JSON_PATH = "C:\\Users\\franz\\Documents\\LoreRuneTerra ASSETS\\16.3.1\\data\\es_ES\\champion.json";
+    private static final String JSON_PATH = "C:\\Users\\franz\\Documents\\LoreRuneTerraASSETS\\16.3.1\\data\\es_ES\\champion.json";
 
     public static void main(String[] args) {
         importChampions();
