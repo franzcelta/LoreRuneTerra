@@ -67,8 +67,15 @@ public class MainController {
 
         TextField searchField = new TextField();
         searchField.setPromptText("Buscar campeón...");
-        searchField.setMaxWidth(380);
-        searchField.setStyle("-fx-background-color: #2d2d2d; -fx-text-fill: white; -fx-prompt-text-fill: gray;");
+        searchField.setMaxWidth(450);
+        searchField.setPrefHeight(38);
+        searchField.setStyle("""
+            -fx-background-color: #2d2d2d; 
+            -fx-text-fill: white; 
+            -fx-prompt-text-fill: #aaaaaa;
+            -fx-font-size: 15px;                         // ← letra más grande
+            -fx-padding: 8 12;                           // ← más espacio interno
+        """);
 
         Region spacer1 = new Region();
         Region spacer2 = new Region();
@@ -77,6 +84,7 @@ public class MainController {
 
         topBar.getChildren().addAll(btnVolver, spacer1, titulo, spacer2, searchField);
 
+        //CONTENEDOR DE CARTAS
         FlowPane flow = new FlowPane();
         flow.setHgap(30);
         flow.setVgap(30);
