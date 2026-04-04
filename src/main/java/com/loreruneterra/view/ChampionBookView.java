@@ -34,17 +34,31 @@ public class ChampionBookView {
         contenido.setAlignment(Pos.CENTER);
 
         // Splashart grande
+        // Splashart grande
         ImageView splashGrande = new ImageView();
-        String rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + campeon.getKey() + "_0.jpg";
+        String rutaSplash;
+
+        // Si es campeón personalizado y tiene splashart, usamos esta ruta
+        if (campeon.getImagenSplash() != null && !campeon.getImagenSplash().isEmpty()) {
+            rutaSplash = campeon.getImagenSplash();
+        } else {
+            // Campeones del dataset
+            rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + campeon.getKey() + "_0.jpg";
+        }
+
         try {
-            String rutaLimpia = rutaSplash.replace("file:///", "");
-            File file = new File(rutaLimpia);
-            if (file.exists() && file.canRead()) {
-                splashGrande.setImage(new Image(file.toURI().toString()));
+            if (rutaSplash != null && !rutaSplash.isEmpty()) {
+                File file = new File(rutaSplash.replace("file:///", ""));
+                if (file.exists() && file.canRead()) {
+                    splashGrande.setImage(new Image(file.toURI().toString()));
+                } else {
+                    System.out.println("No se encontró el splashart: " + rutaSplash);
+                }
             }
         } catch (Exception e) {
             System.err.println("Error cargando splashart: " + e.getMessage());
         }
+
         splashGrande.setFitWidth(600);
         splashGrande.setPreserveRatio(true);
         splashGrande.setSmooth(true);
@@ -67,9 +81,29 @@ public class ChampionBookView {
         Button btnCompleta = new Button("Versión Completa");
         Button btnPrimera = new Button("Primera Persona");
 
-        btnCorta.setOnAction(e -> bioArea.setText(championDAO.getBiografiaCorta(campeon.getKey())));
-        btnCompleta.setOnAction(e -> bioArea.setText(championDAO.getBiografiaCompleta(campeon.getKey())));
-        btnPrimera.setOnAction(e -> bioArea.setText(championDAO.getBiografiaPrimeraPersona(campeon.getKey())));
+        btnCorta.setOnAction(e -> {
+            if (campeon.getBioCorta() != null && !campeon.getBioCorta().isEmpty()) {
+                bioArea.setText(campeon.getBioCorta());
+            } else {
+                bioArea.setText(championDAO.getBiografiaCorta(campeon.getKey()));
+            }
+        });
+
+        btnCompleta.setOnAction(e -> {
+            if (campeon.getBioCompleta() != null && !campeon.getBioCompleta().isEmpty()) {
+                bioArea.setText(campeon.getBioCompleta());
+            } else {
+                bioArea.setText(championDAO.getBiografiaCompleta(campeon.getKey()));
+            }
+        });
+
+        btnPrimera.setOnAction(e -> {
+            if (campeon.getBioPrimera() != null && !campeon.getBioPrimera().isEmpty()) {
+                bioArea.setText(campeon.getBioPrimera());
+            } else {
+                bioArea.setText(championDAO.getBiografiaPrimeraPersona(campeon.getKey()));
+            }
+        });
 
         botonesBox.getChildren().addAll(btnCorta, btnCompleta, btnPrimera);
 

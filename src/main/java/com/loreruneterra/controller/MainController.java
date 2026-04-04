@@ -111,7 +111,9 @@ public class MainController {
 
         newCard.setOnMouseClicked(e -> {
             System.out.println("Clic en Nueva Carta Personalizada");
-            // Aquí más adelante abriremos el formulario para crear
+            abrirFormularioNuevoCampeon(); // Esto abre el diálogo para crear el campeón
+
+
         });
 
         flow.getChildren().add(newCard);
@@ -144,13 +146,27 @@ public class MainController {
         card.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 15; -fx-padding: 15;");
 
         ImageView img = new ImageView();
+
+        // Elegir la ruta correcta del icono
+        String ruta;
+        if (campeon.getImagenIcono() != null && !campeon.getImagenIcono().isEmpty()) {
+            ruta = campeon.getImagenIcono();
+        } else {
+            ruta = campeon.getImagen(); // Dataset de DataDragon
+        }
+
         try {
-            String ruta = campeon.getImagen().replace("file:///", "");
-            File file = new File(ruta);
-            if (file.exists()) {
-                img.setImage(new Image(file.toURI().toString()));
+            if (ruta != null && !ruta.isEmpty()) {
+                File file = new File(ruta.replace("file:///", ""));
+                if (file.exists() && file.canRead()) {
+                    img.setImage(new Image(file.toURI().toString()));
+                } else {
+                    System.out.println("No se encontró la imagen de la carta: " + ruta);
+                }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.err.println("Error cargando imagen de la carta: " + e.getMessage());
+        }
 
         img.setFitWidth(170);
         img.setFitHeight(170);
@@ -173,4 +189,91 @@ public class MainController {
     public BorderPane getRoot() {
         return root;
     }
+
+    private void abrirFormularioNuevoCampeon() {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Nuevo Campeón Personalizado");
+        dialog.setHeaderText("Crea tu propio campeón");
+
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(20));
+
+        // Campos de texto para información básica
+        TextField nombreField = new TextField();
+        nombreField.setPromptText("Nombre del campeón");
+
+        TextField tituloField = new TextField();
+        tituloField.setPromptText("Título (ej: el Destructor)");
+
+        // Campos de texto para imágenes
+        TextField iconoField = new TextField();
+        iconoField.setPromptText("Ruta de imagen del icono");
+
+        TextField splashField = new TextField();
+        splashField.setPromptText("Ruta de imagen del splashart");
+
+        // Campos de texto para biografías
+        TextArea bioCortaField = new TextArea();
+        bioCortaField.setPromptText("Biografía corta");
+        bioCortaField.setPrefHeight(80);
+
+        TextArea bioCompletaField = new TextArea();
+        bioCompletaField.setPromptText("Biografía completa");
+        bioCompletaField.setPrefHeight(120);
+
+        TextArea bioPrimeraField = new TextArea();
+        bioPrimeraField.setPromptText("Biografía en primera persona (opcional)");
+        bioPrimeraField.setPrefHeight(100);
+
+        // Agregar todos los campos al contenido en orden lógico
+        content.getChildren().addAll(
+                new Label("Nombre:"), nombreField,
+                new Label("Título:"), tituloField,
+                new Label("Ruta del icono:"), iconoField,
+                new Label("Ruta del splashart:"), splashField,
+                new Label("Biografía corta:"), bioCortaField,
+                new Label("Biografía completa:"), bioCompletaField,
+                new Label("Biografía en primera persona:"), bioPrimeraField
+        );
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+                String nombre = nombreField.getText().trim();
+                if (nombre.isEmpty()) {
+                    System.out.println("Error: El nombre no puede estar vacío");
+                    return null;
+                }
+
+                Campeon nuevo = new Campeon(
+                        "custom_" + System.currentTimeMillis(),
+                        nombre,
+                        tituloField.getText().trim(),
+                        "" // dejamos el campo 'imagen' vacío, usaremos icono y splash
+                );
+
+                // Guardar rutas de imágenes
+                nuevo.setImagenIcono(iconoField.getText().trim());
+                nuevo.setImagenSplash(splashField.getText().trim());
+
+                // Guardar biografías
+                nuevo.setBioCorta(bioCortaField.getText().trim());
+                nuevo.setBioCompleta(bioCompletaField.getText().trim());
+                nuevo.setBioPrimera(bioPrimeraField.getText().trim());
+
+                // Añadir campeón a la lista
+                campeonesList.add(nuevo);
+
+                // Recargar la vista para mostrar el nuevo campeón
+                showChampionScreen();
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
+    }
+
+
 }
