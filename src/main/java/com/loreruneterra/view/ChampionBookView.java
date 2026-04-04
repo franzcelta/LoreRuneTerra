@@ -43,7 +43,7 @@ public class ChampionBookView {
             rutaSplash = campeon.getImagenSplash();
         } else {
             // Campeones del dataset
-            rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerra ASSETS/img/champion/splash/" + campeon.getKey() + "_0.jpg";
+            rutaSplash = "file:///C:/Users/franz/Documents/LoreRuneTerraASSETS/img/champion/splash/" + campeon.getKey() + "_0.jpg";
         }
 
         try {
