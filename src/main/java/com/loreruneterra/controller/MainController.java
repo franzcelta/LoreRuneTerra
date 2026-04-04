@@ -95,6 +95,27 @@ public class MainController {
             flow.getChildren().add(createChampionCard(c));
         }
 
+        // Carta especial para "Nuevo Campeón Personalizado"
+        VBox newCard = new VBox(12);
+        newCard.setAlignment(Pos.CENTER);
+        newCard.setPrefWidth(200);
+        newCard.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 15; -fx-padding: 15; -fx-border-color: #c8aa6e; -fx-border-width: 2; -fx-border-style: dashed;");
+
+        Label plus = new Label("+");
+        plus.setStyle("-fx-font-size: 60px; -fx-text-fill: #c8aa6e; -fx-font-weight: bold;");
+
+        Label text = new Label("Nuevo Campeón");
+        text.setStyle("-fx-font-size: 16px; -fx-text-fill: #c8aa6e;");
+
+        newCard.getChildren().addAll(plus, text);
+
+        newCard.setOnMouseClicked(e -> {
+            System.out.println("Clic en Nueva Carta Personalizada");
+            // Aquí más adelante abriremos el formulario para crear
+        });
+
+        flow.getChildren().add(newCard);
+
         // Buscador funcional
         searchField.textProperty().addListener((obs, old, newValue) -> {
             String filter = (newValue == null ? "" : newValue).toLowerCase().trim();
