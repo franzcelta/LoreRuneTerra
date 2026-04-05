@@ -254,6 +254,12 @@ public class MainController {
                         "" // dejamos el campo 'imagen' vacío, usaremos icono y splash
                 );
 
+                ChampionDAO dao = new ChampionDAO();
+                dao.insertarCampeonPersonalizado(nuevo);
+
+                campeonesList.add(nuevo);
+                showChampionScreen();
+
                 // Guardar rutas de imágenes
                 nuevo.setImagenIcono(iconoField.getText().trim());
                 nuevo.setImagenSplash(splashField.getText().trim());

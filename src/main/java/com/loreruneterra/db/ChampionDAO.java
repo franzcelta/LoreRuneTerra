@@ -18,7 +18,10 @@ public class ChampionDAO {
             String sql = "SELECT key, nombre, titulo, imagen FROM campeones ORDER BY nombre ASC";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
+                System.out.println("Cargando campeón desde BD: " + rs.getString("nombre"));
+
                 Campeon c = new Campeon(
                         rs.getString("key"),
                         rs.getString("nombre"),
@@ -103,6 +106,27 @@ public class ChampionDAO {
             System.out.println("Biografías guardadas para " + keyCampeon);
         } catch (SQLException e) {
             System.err.println("Error guardando biografías: " + e.getMessage());
+        }
+    }
+
+    public void insertarCampeonPersonalizado(Campeon c) {
+        String sql = "INSERT INTO campeones (key, nombre, titulo, imagen_icono, imagen) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, c.getKey());
+            ps.setString(2, c.getNombre());
+            ps.setString(3, c.getTitulo());
+            ps.setString(4, c.getImagenIcono());
+            ps.setString(5, c.getImagenSplash());
+
+            int filas = ps.executeUpdate();  // 👈 IMPORTANTE
+
+            System.out.println("Filas insertadas: " + filas);
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar campeón: " + e.getMessage());
         }
     }
 

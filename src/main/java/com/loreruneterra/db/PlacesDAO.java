@@ -1,5 +1,6 @@
 package com.loreruneterra.db;
 
+import com.loreruneterra.model.Campeon;
 import com.loreruneterra.model.Lugar;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,4 +48,24 @@ public class PlacesDAO {
     }
 
     // ... Aquí mas tarde una vez avanzado el proyecto meteremos mas metodos para añadir o eliminar cosas.
+    public void insertarCampeonPersonalizado(Campeon c) {
+        String sql = "INSERT INTO campeones (key, nombre, titulo, imagen_icono, imagen) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, c.getKey());
+            ps.setString(2, c.getNombre());
+            ps.setString(3, c.getTitulo());
+            ps.setString(4, c.getImagenIcono());
+            ps.setString(5, c.getImagenSplash());
+
+            ps.executeUpdate();
+
+            System.out.println("Campeón guardado en BD: " + c.getNombre());
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar campeón: " + e.getMessage());
+        }
+    }
 }
