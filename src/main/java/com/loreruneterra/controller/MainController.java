@@ -822,6 +822,9 @@ public class MainController {
         try {
             if (ruta.startsWith("http://") || ruta.startsWith("https://")) {
                 img.setImage(new Image(ruta, true));
+            } else if (ruta.startsWith("file:///")) {
+                // Usar URI directamente para manejar espacios en la ruta
+                img.setImage(new Image(ruta.replace(" ", "%20")));
             } else {
                 String clean = ruta.replace("file:///", "").replace("file://", "");
                 File file = new File(clean);
