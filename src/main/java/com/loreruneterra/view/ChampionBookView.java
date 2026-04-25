@@ -208,6 +208,10 @@ public class ChampionBookView {
         // Índice actual de skin
         int[] idx = {0};
 
+        // ── Clic en imagen → pantalla completa ──
+        img.setOnMouseClicked(e -> mostrarSplashCompleto(skins, idx[0], campeon));
+        img.setStyle("-fx-cursor: hand;");
+
         // Función para cargar imagen con fade
         Runnable cargarImagen = () -> {
             if (skins.isEmpty()) {
@@ -388,4 +392,129 @@ public class ChampionBookView {
         }
         return "Desconocida";
     }
+
+    private void mostrarSplashCompleto(List<File> skins, int idxInicial, Campeon campeon) {
+        Stage modal = new Stage();
+        modal.initStyle(javafx.stage.StageStyle.UNDECORATED);
+        modal.setMaximized(true);
+
+        // Fondo oscuro semitransparente
+        StackPane fondo = new StackPane();
+        fondo.setStyle("-fx-background-color: rgba(0,0,0,0.92);");
+
+        // Imagen grande
+        ImageView imgGrande = new ImageView();
+        imgGrande.setPreserveRatio(true);
+        imgGrande.setSmooth(true);
+        imgGrande.fitWidthProperty().bind(fondo.widthProperty().multiply(0.85));
+        imgGrande.fitHeightProperty().bind(fondo.heightProperty().multiply(0.85));
+
+        int[] idx = {idxInicial};
+
+        Runnable cargar = () -> {
+            if (!skins.isEmpty()) {
+                try {
+                    FadeTransition ftOut = new FadeTransition(Duration.millis(200), imgGrande);
+                    ftOut.setFromValue(1.0);
+                    ftOut.setToValue(0.0);
+                    ftOut.setOnFinished(ev -> {
+                        imgGrande.setImage(new Image(skins.get(idx[0]).toURI().toString()));
+                        FadeTransition ftIn = new FadeTransition(Duration.millis(200), imgGrande);
+                        ftIn.setFromValue(0.0);
+                        ftIn.setToValue(1.0);
+                        ftIn.play();
+                    });
+                    ftOut.play();
+                } catch (Exception ex) {
+                    System.err.println("Error: " + ex.getMessage());
+                }
+            } else {
+                String url = campeon.getImagen();
+                if (url != null && url.startsWith("http")) {
+                    imgGrande.setImage(new Image(url, true));
+                }
+            }
+        };
+
+        // Cargar imagen inicial sin animación
+        if (!skins.isEmpty()) {
+            try {
+                imgGrande.setImage(new Image(skins.get(idx[0]).toURI().toString()));
+            } catch (Exception e) {
+                System.err.println("Error: " + e.getMessage());
+            }
+        }
+
+        // Nombre del skin
+        Label lblSkin = new Label();
+        lblSkin.setStyle("-fx-font-size: 13px; -fx-text-fill: #c8aa6e; -fx-padding: 8;");
+        Runnable actualizarLabel = () -> {
+            if (!skins.isEmpty()) {
+                lblSkin.setText(skins.get(idx[0]).getName()
+                        .replace(".jpg","").replace(".png","")
+                        + "  (" + (idx[0]+1) + "/" + skins.size() + ")");
+            }
+        };
+        actualizarLabel.run();
+
+        // Botones ◀ ▶
+        String estiloBtn = "-fx-background-color: rgba(200,170,110,0.15); " +
+                "-fx-text-fill: #c8aa6e; -fx-font-size: 28px; " +
+                "-fx-padding: 12 28; -fx-background-radius: 8; -fx-cursor: hand;";
+
+        Button btnAnt = new Button("◀");
+        Button btnSig = new Button("▶");
+        btnAnt.setStyle(estiloBtn);
+        btnSig.setStyle(estiloBtn);
+
+        boolean solaUna = skins.size() <= 1;
+        btnAnt.setVisible(!solaUna);
+        btnSig.setVisible(!solaUna);
+
+        btnAnt.setOnAction(e -> {
+            idx[0] = (idx[0] - 1 + skins.size()) % skins.size();
+            cargar.run();
+            actualizarLabel.run();
+        });
+        btnSig.setOnAction(e -> {
+            idx[0] = (idx[0] + 1) % skins.size();
+            cargar.run();
+            actualizarLabel.run();
+        });
+
+        // Hint de cierre
+        Label lblCerrar = new Label("✕  Clic en cualquier lugar para cerrar");
+        lblCerrar.setStyle("-fx-font-size: 12px; -fx-text-fill: #555e6e; -fx-padding: 8;");
+
+        // Layout
+        HBox controles = new HBox(24, btnAnt, lblSkin, btnSig);
+        controles.setAlignment(javafx.geometry.Pos.CENTER);
+
+        VBox centro = new VBox(16, imgGrande, controles, lblCerrar);
+        centro.setAlignment(javafx.geometry.Pos.CENTER);
+
+        fondo.getChildren().add(centro);
+
+        // Clic en fondo → cerrar con fade
+        fondo.setOnMouseClicked(e -> {
+            FadeTransition ft = new FadeTransition(Duration.millis(200), fondo);
+            ft.setFromValue(1.0);
+            ft.setToValue(0.0);
+            ft.setOnFinished(ev -> modal.close());
+            ft.play();
+        });
+
+        Scene scene = new Scene(fondo);
+        modal.setScene(scene);
+
+        // FadeIn al abrir
+        fondo.setOpacity(0);
+        modal.show();
+        FadeTransition ft = new FadeTransition(Duration.millis(300), fondo);
+        ft.setFromValue(0.0);
+        ft.setToValue(1.0);
+        ft.play();
+    }
+
+
 }
