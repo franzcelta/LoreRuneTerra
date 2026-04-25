@@ -5,6 +5,7 @@ import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.db.DatabaseConnector;
 import com.loreruneterra.model.Campeon;
 import com.loreruneterra.view.ChampionBookView;
+import com.loreruneterra.view.DashboardView;
 import javafx.animation.FadeTransition;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -128,15 +129,17 @@ public class MainController {
         subtitle.setStyle("-fx-font-size: 22px; -fx-text-fill: #a09b8c;");
 
         // Botones del menú principal
-        Button btnCampeones = createMenuButton("⚔  Campeones",  "#c8aa6e", "#0a0f1c");
-        Button btnLugares   = createMenuButton("🌍  Regiones",   "#4a7fa5", "white");
+        Button btnCampeones = createMenuButton("⚔  Campeones",   "#c8aa6e", "#0a0f1c");
+        Button btnLugares   = createMenuButton("🌍  Regiones",    "#4a7fa5", "white");
+        Button btnDashboard = createMenuButton("📊  Dashboard",   "#5a2d82", "white");
         Button btnImportar  = createMenuButton("⬇  Importar DataDragon", "#2d6a4f", "white");
 
         btnCampeones.setOnAction(e -> showChampionScreen());
         btnLugares.setOnAction(e -> showLugaresScreen());
+        btnDashboard.setOnAction(e -> showDashboardScreen());
         btnImportar.setOnAction(e -> showImportScreen());
 
-        VBox botones = new VBox(16, btnCampeones, btnLugares, btnImportar);
+        VBox botones = new VBox(16, btnCampeones, btnLugares, btnDashboard, btnImportar);
         botones.setAlignment(Pos.CENTER);
 
         welcome.getChildren().addAll(title, subtitle, botones);
@@ -478,6 +481,17 @@ public class MainController {
     //  PANTALLA DE IMPORTACIÓN DATADRAGON
     // ══════════════════════════════════════════
 
+    private void showDashboardScreen() {
+        VBox page = new VBox();
+        page.setStyle("-fx-background-color: #0d1624;");
+        HBox topBar = buildTopBar("Dashboard de Estadísticas");
+        DashboardView dashboard = new DashboardView(campeonesList);
+        ScrollPane scroll = dashboard.buildView();
+        VBox.setVgrow(scroll, Priority.ALWAYS);
+        page.getChildren().addAll(topBar, scroll);
+        setCenter(page);
+    }
+
     private void showImportScreen() {
         VBox page = new VBox(20);
         page.setStyle("-fx-background-color: #0d1624;");
@@ -543,6 +557,8 @@ public class MainController {
                             );
                     int nuevos = importer.importar();
                     javafx.application.Platform.runLater(() -> {
+                        DashboardView.registrarActividad("IMPORT",
+                                "DataDragon v" + "16.8.1" + " — " + nuevos + " nuevos");
                         lblEstado.setText("✓ Completado: " + nuevos + " campeón"
                                 + (nuevos != 1 ? "es" : "") + " nuevos importados.");
                         lblEstado.setStyle("-fx-font-size: 13px; -fx-text-fill: #4caf50;");
@@ -617,6 +633,7 @@ public class MainController {
                 boolean ok = personalDAO.create(nuevo);
                 if (ok) {
                     campeonesList.add(nuevo);
+                    DashboardView.registrarActividad("CREATE", "Añadido: " + nuevo.getNombre());
                     flow.getChildren().clear();
                     renderCards(flow, filtrar(campeonesList));
                     flow.getChildren().add(createNewChampionCard(flow));
@@ -684,6 +701,7 @@ public class MainController {
                 }
 
                 if (ok) {
+                    DashboardView.registrarActividad("UPDATE", "Editado: " + campeon.getNombre());
                     flow.getChildren().clear();
                     renderCards(flow, filtrar(campeonesList));
                     flow.getChildren().add(createNewChampionCard(flow));
@@ -715,6 +733,7 @@ public class MainController {
                         ? personalDAO.delete(campeon.getKey())
                         : championDAO.deleteCampeon(campeon.getId());
                 if (ok) {
+                    DashboardView.registrarActividad("DELETE", "Eliminado: " + campeon.getNombre());
                     campeonesList.remove(campeon);
                     flow.getChildren().clear();
                     renderCards(flow, filtrar(campeonesList));
@@ -753,10 +772,8 @@ public class MainController {
         if (ruta == null || ruta.isEmpty()) return img;
         try {
             if (ruta.startsWith("http://") || ruta.startsWith("https://")) {
-                // URL web (campeones DataDragon)
-                img.setImage(new Image(ruta, true)); // true = carga asíncrona
+                img.setImage(new Image(ruta, true));
             } else {
-                // Ruta local (campeones personalizados)
                 String clean = ruta.replace("file:///", "").replace("file://", "");
                 File file = new File(clean);
                 if (file.exists() && file.canRead()) {
