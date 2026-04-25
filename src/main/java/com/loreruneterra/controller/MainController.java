@@ -729,9 +729,17 @@ public class MainController {
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                boolean ok = esPersonalizado(campeon)
-                        ? personalDAO.delete(campeon.getKey())
-                        : championDAO.deleteCampeon(campeon.getId());
+                boolean ok;
+                if (esPersonalizado(campeon)) {
+                    // Intentar primero en campeones_personalizados
+                    ok = personalDAO.delete(campeon.getKey());
+                    // Si no estaba ahí, buscar en campeones (datos legacy)
+                    if (!ok) {
+                        ok = championDAO.deleteCampeon(campeon.getId());
+                    }
+                } else {
+                    ok = championDAO.deleteCampeon(campeon.getId());
+                }
                 if (ok) {
                     DashboardView.registrarActividad("DELETE", "Eliminado: " + campeon.getNombre());
                     campeonesList.remove(campeon);
