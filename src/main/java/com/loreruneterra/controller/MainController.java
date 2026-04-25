@@ -1,9 +1,9 @@
 package com.loreruneterra.controller;
 
+import com.loreruneterra.db.CampeonPersonalDAO;
 import com.loreruneterra.db.ChampionDAO;
 import com.loreruneterra.model.Campeon;
 import com.loreruneterra.view.ChampionBookView;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,23 +16,26 @@ import javafx.stage.Stage;
 import java.io.File;
 
 /**
- * Controlador principal de la aplicación LoreRuneTerra.
- * Gestiona la pantalla de bienvenida, el catálogo de campeones
- * y las operaciones CRUD (Crear, Leer, Actualizar, Eliminar).
+ * Controlador principal de LoreRuneTerra.
+ * Gestiona la pantalla de bienvenida, el catálogo y el CRUD completo.
  *
- * Patrón MVC: este controlador no contiene SQL — delega toda
- * la persistencia en ChampionDAO.
+ * Lógica de persistencia:
+ *   - Campeones de DataDragon (key NO empieza por "custom_") → ChampionDAO
+ *   - Campeones personalizados (key empieza por "custom_")   → CampeonPersonalDAO
  */
 public class MainController {
 
-    private final ChampionDAO championDAO;
+    private final ChampionDAO        championDAO;
+    private final CampeonPersonalDAO personalDAO;
     private final ObservableList<Campeon> campeonesList;
     private final BorderPane root = new BorderPane();
     private Stage primaryStage;
 
-    public MainController(ChampionDAO championDAO, ObservableList<Campeon> campeonesList) {
-        this.championDAO   = championDAO;
-        this.campeonesList = campeonesList;
+    public MainController(ChampionDAO championDAO,
+                          ObservableList<Campeon> campeonesList) {
+        this.championDAO    = championDAO;
+        this.personalDAO    = new CampeonPersonalDAO();
+        this.campeonesList  = campeonesList;
         showWelcomeScreen();
     }
 
@@ -41,7 +44,7 @@ public class MainController {
     }
 
     // ══════════════════════════════════════════
-    //  PANTALLAS DE NAVEGACIÓN
+    //  NAVEGACIÓN
     // ══════════════════════════════════════════
 
     private void showWelcomeScreen() {
@@ -94,7 +97,6 @@ public class MainController {
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         topBar.getChildren().addAll(btnVolver, spacer1, titulo, spacer2, searchField);
 
-        // ── Contenedor de cartas ──
         FlowPane flow = new FlowPane();
         flow.setHgap(30);
         flow.setVgap(30);
@@ -104,11 +106,8 @@ public class MainController {
         for (Campeon c : campeonesList) {
             flow.getChildren().add(createChampionCard(c));
         }
-
-        // Carta especial "Nuevo Campeón"
         flow.getChildren().add(createNewChampionCard());
 
-        // Buscador funcional (filtro en tiempo real sobre campeonesList)
         searchField.textProperty().addListener((obs, old, newVal) -> {
             String filtro = newVal == null ? "" : newVal.toLowerCase().trim();
             flow.getChildren().clear();
@@ -117,7 +116,6 @@ public class MainController {
                     flow.getChildren().add(createChampionCard(c));
                 }
             }
-            // Siempre mostrar carta de "Nuevo" al final
             if (filtro.isEmpty()) {
                 flow.getChildren().add(createNewChampionCard());
             }
@@ -129,7 +127,7 @@ public class MainController {
     }
 
     // ══════════════════════════════════════════
-    //  TARJETAS DE CAMPEÓN
+    //  TARJETAS
     // ══════════════════════════════════════════
 
     private VBox createChampionCard(Campeon campeon) {
@@ -159,33 +157,37 @@ public class MainController {
         Label name = new Label(campeon.getNombre());
         name.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        // Botones de editar y eliminar (aparecen en la tarjeta)
+        // Indicador visual si es personalizado
+        if (esPersonalizado(campeon)) {
+            Label badge = new Label("✦ Personalizado");
+            badge.setStyle("-fx-font-size: 11px; -fx-text-fill: #c8aa6e;");
+            card.getChildren().addAll(img, name, badge);
+        } else {
+            card.getChildren().addAll(img, name);
+        }
+
         HBox botones = new HBox(8);
         botones.setAlignment(Pos.CENTER);
 
         Button btnEditar = new Button("✏ Editar");
         btnEditar.setStyle("-fx-background-color: #c8aa6e; -fx-text-fill: #0a0f1c; " +
                 "-fx-font-size: 12px; -fx-padding: 4 10; -fx-background-radius: 6;");
-        btnEditar.setOnAction(e -> {
-            e.consume();
-            abrirFormularioEditar(campeon);
-        });
+        btnEditar.setOnAction(e -> { e.consume(); abrirFormularioEditar(campeon); });
 
         Button btnEliminar = new Button("🗑 Eliminar");
         btnEliminar.setStyle("-fx-background-color: #8b1a1a; -fx-text-fill: white; " +
                 "-fx-font-size: 12px; -fx-padding: 4 10; -fx-background-radius: 6;");
-        btnEliminar.setOnAction(e -> {
-            e.consume();
-            confirmarEliminar(campeon);
-        });
+        btnEliminar.setOnAction(e -> { e.consume(); confirmarEliminar(campeon); });
 
         botones.getChildren().addAll(btnEditar, btnEliminar);
-        card.getChildren().addAll(img, name, botones);
+        card.getChildren().add(botones);
 
-        // Clic en la tarjeta → abrir libro del campeón
         card.setOnMouseClicked(e -> {
-            ChampionBookView view = new ChampionBookView();
-            view.mostrarLibro(campeon, primaryStage);
+            if (e.getTarget() == card || e.getTarget() instanceof ImageView
+                    || e.getTarget() instanceof Label) {
+                ChampionBookView view = new ChampionBookView();
+                view.mostrarLibro(campeon, primaryStage);
+            }
         });
 
         return card;
@@ -198,7 +200,6 @@ public class MainController {
         newCard.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 15; " +
                 "-fx-padding: 15; -fx-border-color: #c8aa6e; " +
                 "-fx-border-width: 2; -fx-border-style: dashed;");
-
         Label plus = new Label("+");
         plus.setStyle("-fx-font-size: 60px; -fx-text-fill: #c8aa6e; -fx-font-weight: bold;");
         Label text = new Label("Nuevo Campeón");
@@ -224,15 +225,14 @@ public class MainController {
         dialog.getDialogPane().setContent(sp);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // Recuperar los campos del formulario para leerlos al confirmar
-        TextField nombreField     = (TextField) content.lookup("#nombreField");
-        TextField tituloField     = (TextField) content.lookup("#tituloField");
-        TextField claseField      = (TextField) content.lookup("#claseField");
-        TextField iconoField      = (TextField) content.lookup("#iconoField");
-        TextField splashField     = (TextField) content.lookup("#splashField");
-        TextArea  bioCortaField   = (TextArea)  content.lookup("#bioCortaField");
-        TextArea  bioCompletaField= (TextArea)  content.lookup("#bioCompletaField");
-        TextArea  bioPrimeraField = (TextArea)  content.lookup("#bioPrimeraField");
+        TextField nombreField      = (TextField) content.lookup("#nombreField");
+        TextField tituloField      = (TextField) content.lookup("#tituloField");
+        TextField claseField       = (TextField) content.lookup("#claseField");
+        TextField iconoField       = (TextField) content.lookup("#iconoField");
+        TextField splashField      = (TextField) content.lookup("#splashField");
+        TextArea  bioCortaField    = (TextArea)  content.lookup("#bioCortaField");
+        TextArea  bioCompletaField = (TextArea)  content.lookup("#bioCompletaField");
+        TextArea  bioPrimeraField  = (TextArea)  content.lookup("#bioPrimeraField");
 
         dialog.setResultConverter(button -> {
             if (button == ButtonType.OK) {
@@ -243,30 +243,24 @@ public class MainController {
                 }
 
                 Campeon nuevo = new Campeon(
-                        "custom_" + System.currentTimeMillis(),
+                        "custom_" + nombre.toLowerCase().replaceAll("\\s+", "_")
+                                + "_" + System.currentTimeMillis(),
                         nombre,
                         tituloField.getText().trim(),
                         ""
                 );
-                nuevo.setClase      (claseField.getText().trim());
-                nuevo.setImagenIcono(iconoField.getText().trim());
-                nuevo.setImagenSplash(splashField.getText().trim());
-                nuevo.setBioCorta   (bioCortaField.getText().trim());
-                nuevo.setBioCompleta(bioCompletaField.getText().trim());
-                nuevo.setBioPrimera (bioPrimeraField.getText().trim());
+                nuevo.setClase        (claseField.getText().trim());
+                nuevo.setImagenIcono  (iconoField.getText().trim());
+                nuevo.setImagenSplash (splashField.getText().trim());
+                nuevo.setBioCorta     (bioCortaField.getText().trim());
+                nuevo.setBioCompleta  (bioCompletaField.getText().trim());
+                nuevo.setBioPrimera   (bioPrimeraField.getText().trim());
 
-                // ── PERSISTIR EN BASE DE DATOS ──
-                boolean ok = championDAO.createCampeon(nuevo);
+                // Persistir en campeones_personalizados
+                boolean ok = personalDAO.create(nuevo);
                 if (ok) {
-                    // Guardar también las biografías
-                    championDAO.saveBiografia(
-                            nuevo.getKey(),
-                            nuevo.getBioCorta(),
-                            nuevo.getBioCompleta(),
-                            nuevo.getBioPrimera()
-                    );
                     campeonesList.add(nuevo);
-                    showChampionScreen();  // Recargar vista
+                    showChampionScreen();
                     mostrarAlerta(Alert.AlertType.INFORMATION, "Campeón creado",
                             "'" + nuevo.getNombre() + "' se ha añadido correctamente.");
                 } else {
@@ -288,7 +282,7 @@ public class MainController {
         dialog.setTitle("Editar Campeón");
         dialog.setHeaderText("Editando: " + campeon.getNombre());
 
-        VBox content = buildFormulario(campeon);  // Pre-rellena con valores actuales
+        VBox content = buildFormulario(campeon);
         ScrollPane sp = new ScrollPane(content);
         sp.setFitToWidth(true);
         sp.setPrefHeight(520);
@@ -312,25 +306,33 @@ public class MainController {
                     return null;
                 }
 
-                // Actualizar el objeto en memoria
-                campeon.setNombre   (nombre);
-                campeon.setTitulo   (tituloField.getText().trim());
-                campeon.setClase    (claseField.getText().trim());
+                campeon.setNombre      (nombre);
+                campeon.setTitulo      (tituloField.getText().trim());
+                campeon.setClase       (claseField.getText().trim());
                 campeon.setImagenIcono (iconoField.getText().trim());
                 campeon.setImagenSplash(splashField.getText().trim());
-                campeon.setBioCorta   (bioCortaField.getText().trim());
-                campeon.setBioCompleta(bioCompletaField.getText().trim());
-                campeon.setBioPrimera (bioPrimeraField.getText().trim());
+                campeon.setBioCorta    (bioCortaField.getText().trim());
+                campeon.setBioCompleta (bioCompletaField.getText().trim());
+                campeon.setBioPrimera  (bioPrimeraField.getText().trim());
 
-                // ── PERSISTIR EN BASE DE DATOS ──
-                boolean ok = championDAO.updateCampeon(campeon);
+                boolean ok;
+                if (esPersonalizado(campeon)) {
+                    // Campeón personalizado → campeones_personalizados
+                    ok = personalDAO.update(campeon);
+                } else {
+                    // Campeón DataDragon → tabla campeones + tabla biografias
+                    ok = championDAO.updateCampeon(campeon);
+                    if (ok) {
+                        championDAO.saveBiografia(
+                                campeon.getKey(),
+                                campeon.getBioCorta(),
+                                campeon.getBioCompleta(),
+                                campeon.getBioPrimera()
+                        );
+                    }
+                }
+
                 if (ok) {
-                    championDAO.saveBiografia(
-                            campeon.getKey(),
-                            campeon.getBioCorta(),
-                            campeon.getBioCompleta(),
-                            campeon.getBioPrimera()
-                    );
                     showChampionScreen();
                     mostrarAlerta(Alert.AlertType.INFORMATION, "Campeón actualizado",
                             "'" + campeon.getNombre() + "' se ha actualizado correctamente.");
@@ -354,12 +356,19 @@ public class MainController {
         confirm.setHeaderText("¿Eliminar a '" + campeon.getNombre() + "'?");
         confirm.setContentText(
                 "Esta acción es irreversible.\n" +
-                        "También se eliminarán todas sus biografías asociadas.");
+                        (esPersonalizado(campeon)
+                                ? "Se eliminará de tus campeones personalizados."
+                                : "También se eliminarán todas sus biografías asociadas."));
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // ── ELIMINAR EN BASE DE DATOS ──
-                boolean ok = championDAO.deleteCampeon(campeon.getId());
+                boolean ok;
+                if (esPersonalizado(campeon)) {
+                    ok = personalDAO.delete(campeon.getKey());
+                } else {
+                    ok = championDAO.deleteCampeon(campeon.getId());
+                }
+
                 if (ok) {
                     campeonesList.remove(campeon);
                     showChampionScreen();
@@ -378,10 +387,14 @@ public class MainController {
     // ══════════════════════════════════════════
 
     /**
-     * Construye el formulario de creación/edición.
-     * Si se pasa un Campeon existente, los campos se pre-rellenan (modo edición).
-     * Si se pasa null, los campos quedan vacíos (modo creación).
+     * Determina si un campeón es personalizado (creado por el usuario)
+     * o importado de DataDragon.
+     * Los personalizados tienen key que empieza por "custom_".
      */
+    private boolean esPersonalizado(Campeon campeon) {
+        return campeon.getKey() != null && campeon.getKey().startsWith("custom_");
+    }
+
     private VBox buildFormulario(Campeon campeon) {
         VBox content = new VBox(10);
         content.setPadding(new Insets(20));
@@ -422,14 +435,14 @@ public class MainController {
         bioPrimeraField.setPrefHeight(100);
 
         content.getChildren().addAll(
-                new Label("Nombre: *"),   nombreField,
-                new Label("Título:"),     tituloField,
-                new Label("Clase:"),      claseField,
-                new Label("Icono:"),      iconoField,
-                new Label("Splashart:"),  splashField,
-                new Label("Bio corta:"),  bioCortaField,
-                new Label("Bio completa:"), bioCompletaField,
-                new Label("Bio primera persona:"), bioPrimeraField
+                new Label("Nombre: *"),             nombreField,
+                new Label("Título:"),               tituloField,
+                new Label("Clase:"),                claseField,
+                new Label("Icono:"),                iconoField,
+                new Label("Splashart:"),            splashField,
+                new Label("Bio corta:"),            bioCortaField,
+                new Label("Bio completa:"),         bioCompletaField,
+                new Label("Bio primera persona:"),  bioPrimeraField
         );
         return content;
     }
