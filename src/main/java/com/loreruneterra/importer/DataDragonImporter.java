@@ -95,6 +95,7 @@ public class DataDragonImporter {
                 existente.setImagen(imagen);
                 championDAO.updateCampeon(existente);
                 omitidos++;
+                logger.accept("  ↺ " + nombre);
             } else {
                 Campeon campeon = new Campeon(key, nombre, titulo, imagen);
                 campeon.setClase(clase);
@@ -114,9 +115,9 @@ public class DataDragonImporter {
 
         logger.accept("\n──────────────────────────────");
         logger.accept("Importación completada.");
-        logger.accept("  Nuevos:   " + nuevos);
-        logger.accept("  Omitidos: " + omitidos + " (ya existían)");
-        logger.accept("  Total:    " + total);
+        logger.accept("  Nuevos:       " + nuevos);
+        logger.accept("  Actualizados: " + omitidos);
+        logger.accept("  Total:        " + total);
 
         return nuevos;
     }
