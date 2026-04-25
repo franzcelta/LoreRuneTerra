@@ -23,7 +23,9 @@ public class MainApp extends Application {
         this.primaryStage = primaryStage;  // ← asignamos directamente aquí (opcional, pero recomendado)
 
         // Cargar datos
-        List<Campeon> lista = championDAO.getAllCampeones();
+        // Cargar datos — DataDragon + personalizados
+        List<Campeon> lista = new java.util.ArrayList<>(championDAO.getAllCampeones());
+        lista.addAll(new com.loreruneterra.db.CampeonPersonalDAO().getAll());
         campeonesList.setAll(lista);
 
         // Crear el controlador

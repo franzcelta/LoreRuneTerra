@@ -7,6 +7,7 @@ import com.loreruneterra.model.Campeon;
 import com.loreruneterra.view.ChampionBookView;
 import com.loreruneterra.view.DashboardView;
 import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -347,6 +348,24 @@ public class MainController {
         card.setAlignment(Pos.CENTER);
         card.setPrefWidth(190);
         card.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 14; -fx-padding: 14;");
+
+        // ── Efecto hover estilo LoL ──
+        card.setOnMouseEntered(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+            st.setToX(1.06);
+            st.setToY(1.06);
+            st.play();
+            card.setStyle(card.getStyle() +
+                    "-fx-effect: dropshadow(gaussian, #c8aa6e, 18, 0.4, 0, 0);");
+        });
+
+        card.setOnMouseExited(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+            st.setToX(1.0);
+            st.setToY(1.0);
+            st.play();
+            card.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 14; -fx-padding: 14;");
+        });
 
         // Imagen
         ImageView img = loadImage(
