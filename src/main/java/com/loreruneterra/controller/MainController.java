@@ -7,7 +7,9 @@ import com.loreruneterra.model.Campeon;
 import com.loreruneterra.view.ChampionBookView;
 import com.loreruneterra.view.DashboardView;
 import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -108,10 +110,30 @@ public class MainController {
         ft.play();
     }
 
-    /** Cambia el centro del BorderPane con animación FadeIn. */
     private void setCenter(Node node) {
+        Node actual = root.getCenter();
+        if (actual == null) {
+            root.setCenter(node);
+            fadeIn(node);
+            return;
+        }
+
+        // Preparar nueva pantalla fuera de vista (a la derecha)
+        node.setTranslateX(root.getWidth());
+        node.setOpacity(0);
         root.setCenter(node);
-        fadeIn(node);
+
+        // Nueva pantalla entra desde la derecha
+        TranslateTransition ttIn = new TranslateTransition(Duration.millis(320), node);
+        ttIn.setFromX(root.getWidth() > 0 ? root.getWidth() : 1300);
+        ttIn.setToX(0);
+
+        FadeTransition ftIn = new FadeTransition(Duration.millis(320), node);
+        ftIn.setFromValue(0.0);
+        ftIn.setToValue(1.0);
+
+        ParallelTransition entrada = new ParallelTransition(ttIn, ftIn);
+        entrada.play();
     }
 
     // ══════════════════════════════════════════
