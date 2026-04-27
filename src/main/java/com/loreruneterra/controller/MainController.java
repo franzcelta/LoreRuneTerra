@@ -671,6 +671,16 @@ public class MainController {
                 nuevo.setBioCompleta  (bioCompletaField.getText().trim());
                 nuevo.setBioPrimera   (bioPrimeraField.getText().trim());
 
+                // Verificar nombre duplicado
+                boolean nombreExiste = campeonesList.stream()
+                        .anyMatch(c -> c.getNombre().equalsIgnoreCase(nombre));
+
+                if (nombreExiste) {
+                    mostrarAlerta(Alert.AlertType.ERROR, "Error",
+                            "Ya existe un campeón con ese nombre.");
+                    return null;
+                }
+
                 boolean ok = personalDAO.create(nuevo);
                 if (ok) {
                     campeonesList.add(nuevo);
