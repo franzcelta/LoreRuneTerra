@@ -709,6 +709,12 @@ public class MainController {
         dialog.setTitle("Editar Campeón");
         dialog.setHeaderText("Editando: " + campeon.getNombre());
 
+        if (!esPersonalizado(campeon)) {
+            campeon.setBioCorta(championDAO.getBiografiaCorta(campeon.getKey()));
+            campeon.setBioCompleta(championDAO.getBiografiaCompleta(campeon.getKey()));
+            campeon.setBioPrimera(championDAO.getBiografiaPrimeraPersona(campeon.getKey()));
+        }
+
         VBox content = buildFormulario(campeon);
         ScrollPane sp = new ScrollPane(content);
         sp.setFitToWidth(true);
