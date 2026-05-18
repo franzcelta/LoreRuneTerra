@@ -431,7 +431,24 @@ public class MainController {
             flow.getChildren().clear();
             List<Campeon> filtrados = filtrar(campeonesList);
             renderCards(flow, filtrados);
-            flow.getChildren().add(createNewChampionCard(flow));
+
+            if (filtrados.isEmpty()) {
+                VBox empty = new VBox(12);
+                empty.setAlignment(Pos.CENTER);
+                empty.setPrefWidth(flow.getWidth() > 0 ? flow.getWidth() : 800);
+                empty.setPadding(new Insets(80, 0, 80, 0));
+                Label lblEmpty = new Label("No se encontraron campeones con estos filtros");
+                lblEmpty.setStyle("-fx-font-size: 16px; -fx-text-fill: #555e6e; -fx-font-style: italic;");
+                Label lblSub = new Label("Prueba con otros filtros o limpia la búsqueda");
+                lblSub.setStyle("-fx-font-size: 12px; -fx-text-fill: #3d4a5c;");
+                empty.getChildren().addAll(lblEmpty, lblSub);
+                FlowPane.setMargin(empty, new Insets(0));
+                flow.getChildren().add(empty);
+            }
+
+            if (!filtrados.isEmpty()) {
+                flow.getChildren().add(createNewChampionCard(flow));
+            }
 
             int total = filtrados.size();
             counter.setText(total + " campeón" + (total != 1 ? "es" : ""));
