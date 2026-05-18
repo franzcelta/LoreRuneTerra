@@ -2,8 +2,17 @@
 
 **Aplicación de escritorio para la gestión del universo narrativo de League of Legends**
 
+![Java](https://img.shields.io/badge/Java-23-orange?logo=openjdk)
+![JavaFX](https://img.shields.io/badge/JavaFX-25.0.2-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791?logo=postgresql)
+![Maven](https://img.shields.io/badge/Maven-3.9-red?logo=apachemaven)
+![Gson](https://img.shields.io/badge/Gson-2.11.0-4285F4?logo=google)
+![JDBC](https://img.shields.io/badge/JDBC-4.2-darkblue)
+![Status](https://img.shields.io/badge/Status-En%20desarrollo-yellow)
+![TFC](https://img.shields.io/badge/TFC-DAM%202024--2026-purple)
+
 Trabajo de Fin de Ciclo — Desarrollo de Aplicaciones Multiplataforma (DAM)  
-Autor: Francisco Andrés Manzo Cabrera | Curso 2025–2026
+Autor: Francisco Andrés Manzo Cabrera | Curso 2024–2026
 
 ---
 
@@ -73,10 +82,7 @@ git clone https://github.com/franzcelta/LoreRuneTerra.git
 CREATE DATABASE loreruneterra;
 ```
 
-3. Copia el fichero de configuración y edítalo con tus credenciales:
-```bash
-cp src/main/resources/config.properties.template src/main/resources/config.properties
-```
+3. Crea el fichero de configuración:
 
 ```properties
 db.host=localhost
