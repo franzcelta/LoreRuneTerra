@@ -475,6 +475,43 @@ public class MainController {
 
     private VBox createChampionCard(Campeon campeon, FlowPane flow) {
         VBox card = new VBox(10);
+
+        // Hacer la tarjeta focusable con teclado
+        card.setFocusTraversable(true);
+
+    // Estilo de foco visible
+        card.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (isFocused) {
+                card.setStyle(
+                        "-fx-background-color: #1c2526;" +
+                                "-fx-background-radius: 14;" +
+                                "-fx-padding: 14;" +
+                                "-fx-border-color: #c8aa6e;" +
+                                "-fx-border-width: 2;" +
+                                "-fx-border-radius: 14;" +
+                                "-fx-effect: dropshadow(gaussian, #c8aa6e, 12, 0.6, 0, 0);"
+                );
+            } else {
+                card.setStyle(
+                        "-fx-background-color: #1c2526;" +
+                                "-fx-background-radius: 14;" +
+                                "-fx-padding: 14;"
+                );
+            }
+        });
+
+    // Abrir libro con Enter, editar con E, eliminar con Delete
+        card.setOnKeyPressed(e -> {
+            switch (e.getCode()) {
+                case ENTER -> {
+                    ChampionBookView view = new ChampionBookView();
+                    view.mostrarLibro(campeon, primaryStage);
+                }
+                case E -> abrirFormularioEditar(campeon, flow);
+                case DELETE -> confirmarEliminar(campeon, flow);
+            }
+        });
+
         card.setAlignment(Pos.CENTER);
         card.setPrefWidth(190);
         card.setStyle("-fx-background-color: #1c2526; -fx-background-radius: 14; -fx-padding: 14;");

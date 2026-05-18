@@ -173,3 +173,32 @@
     -fx-padding: 0 !important;
     -fx-background-insets: 0 !important;
 }
+
+/*Esto hace que cuando navegas con Tab, el elemento activo se ilumine con el borde dorado
+y el brillo que ya usas en el hover de las tarjetas — coherente con la estética del proyecto. */
+
+.button:focused {
+    -fx-border-color: #c8aa6e;
+    -fx-border-width: 2;
+    -fx-border-radius: 6;
+    -fx-effect: dropshadow(gaussian, #c8aa6e, 8, 0.6, 0, 0);
+}
+
+.text-field:focused {
+    -fx-border-color: #c8aa6e;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(gaussian, #c8aa6e, 8, 0.6, 0, 0);
+}
+
+.combo-box:focused {
+    -fx-border-color: #c8aa6e;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(gaussian, #c8aa6e, 8, 0.6, 0, 0);
+}
+
+.scroll-pane:focused {
+    -fx-border-color: #c8aa6e;
+    -fx-border-width: 2;
+}
