@@ -265,8 +265,63 @@ public class MainController {
         cbClase.getItems().addAll(CLASES);
         cbClase.setValue("Todas");
         cbClase.setPrefHeight(36);
-        cbClase.setStyle("-fx-background-color: #2d2d2d; -fx-text-fill: white; -fx-font-size: 13px;");
+
+        cbClase.setStyle(
+                "-fx-background-color: #2d2d2d;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-mark-highlight-text-fill: white;" +
+                        "-fx-mark-color: white;"
+        );
+
         cbClase.setPromptText("Clase");
+
+        cbClase.setCellFactory(lv -> new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: #2d2d2d;");
+                } else {
+                    setText(item);
+                    setStyle(
+                            "-fx-text-fill: white;" +
+                                    "-fx-background-color: #2d2d2d;" +
+                                    "-fx-padding: 8 12;" +
+                                    "-fx-border-color: transparent transparent #3d3d3d transparent;" +
+                                    "-fx-border-width: 0 0 1 0;"
+                    );
+                    setOnMouseEntered(e -> setStyle(
+                            "-fx-text-fill: #c8aa6e;" +
+                                    "-fx-background-color: #1a1a2e;" +
+                                    "-fx-padding: 8 12;" +
+                                    "-fx-border-color: transparent transparent #3d3d3d transparent;" +
+                                    "-fx-border-width: 0 0 1 0;"
+                    ));
+                    setOnMouseExited(e -> setStyle(
+                            "-fx-text-fill: white;" +
+                                    "-fx-background-color: #2d2d2d;" +
+                                    "-fx-padding: 8 12;" +
+                                    "-fx-border-color: transparent transparent #3d3d3d transparent;" +
+                                    "-fx-border-width: 0 0 1 0;"
+                    ));
+                }
+            }
+        });
+
+        cbClase.setButtonCell(new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2d2d2d;");
+                }
+            }
+        });
 
         // ComboBox lugar
         ComboBox<String> cbLugar = new ComboBox<>();
@@ -275,7 +330,60 @@ public class MainController {
         for (String[] l : lugares) cbLugar.getItems().add(l[1]);
         cbLugar.setValue("Todos los lugares");
         cbLugar.setPrefHeight(36);
-        cbLugar.setStyle("-fx-background-color: #2d2d2d; -fx-text-fill: white; -fx-font-size: 13px;");
+        cbLugar.setStyle(
+                "-fx-background-color: #2d2d2d;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-mark-highlight-text-fill: white;" +
+                        "-fx-mark-color: white;"
+        );
+
+        cbLugar.setCellFactory(lv -> new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: #2d2d2d;");
+                } else {
+                    setText(item);
+                    setStyle(
+                            "-fx-text-fill: white;" +
+                                    "-fx-background-color: #2d2d2d;" +
+                                    "-fx-padding: 8 12;" +
+                                    "-fx-border-color: transparent transparent #3d3d3d transparent;" +
+                                    "-fx-border-width: 0 0 1 0;"
+                    );
+                    setOnMouseEntered(e -> setStyle(
+                            "-fx-text-fill: #c8aa6e;" +
+                                    "-fx-background-color: #1a1a2e;" +
+                                    "-fx-padding: 8 12;" +
+                                    "-fx-border-color: transparent transparent #3d3d3d transparent;" +
+                                    "-fx-border-width: 0 0 1 0;"
+                    ));
+                    setOnMouseExited(e -> setStyle(
+                            "-fx-text-fill: white;" +
+                                    "-fx-background-color: #2d2d2d;" +
+                                    "-fx-padding: 8 12;" +
+                                    "-fx-border-color: transparent transparent #3d3d3d transparent;" +
+                                    "-fx-border-width: 0 0 1 0;"
+                    ));
+                }
+            }
+        });
+
+        cbLugar.setButtonCell(new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2d2d2d;");
+                }
+            }
+        });
 
         // Botón limpiar filtros
         Button btnLimpiar = new Button("✕ Limpiar");
