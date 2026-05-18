@@ -479,7 +479,7 @@ public class MainController {
         // Hacer la tarjeta focusable con teclado
         card.setFocusTraversable(true);
 
-    // Estilo de foco visible
+        // Estilo de foco visible
         card.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (isFocused) {
                 card.setStyle(
@@ -566,8 +566,16 @@ public class MainController {
         HBox botones = new HBox(6);
         botones.setAlignment(Pos.CENTER);
 
-        Button btnEditar   = smallButton("✏", "#c8aa6e", "#0a0f1c");
-        Button btnEliminar = smallButton("🗑", "#8b1a1a", "white");
+        Button btnEditar   = smallButton("Editar", "#c8aa6e", "#0a0f1c");
+        Button btnEliminar = smallButton("Eliminar", "#8b1a1a", "white");
+
+        Tooltip tooltipEditar = new Tooltip("Editar campeón");
+        tooltipEditar.setStyle("-fx-background-color: #1c2526; -fx-text-fill: #c8aa6e; -fx-font-size: 11px;");
+        Tooltip.install(btnEditar, tooltipEditar);
+
+        Tooltip tooltipEliminar = new Tooltip("Eliminar campeón");
+        tooltipEliminar.setStyle("-fx-background-color: #1c2526; -fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+        Tooltip.install(btnEliminar, tooltipEliminar);
 
         btnEditar.setOnAction(e -> { e.consume(); abrirFormularioEditar(campeon, flow); });
         btnEliminar.setOnAction(e -> { e.consume(); confirmarEliminar(campeon, flow); });
