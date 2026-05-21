@@ -113,7 +113,36 @@ public class ChampionBookView {
                 "-fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 8;");
         cerrarBtn.setOnAction(e -> libroStage.close());
 
-        HBox footer = new HBox(cerrarBtn);
+        Button exportarBtn = new Button("⬇  Exportar PDF");
+        exportarBtn.setStyle("-fx-background-color: #1a3a5c; -fx-text-fill: #c8aa6e; " +
+                "-fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 8;");
+        exportarBtn.setOnAction(e -> {
+            javafx.stage.DirectoryChooser chooser = new javafx.stage.DirectoryChooser();
+            chooser.setTitle("Seleccionar carpeta de destino");
+            File carpeta = chooser.showDialog(libroStage);
+            if (carpeta != null) {
+                try {
+                    // Cargar biografías antes de exportar
+                    campeon.setBioCorta(championDAO.getBiografiaCorta(campeon.getKey()));
+                    campeon.setBioCompleta(championDAO.getBiografiaCompleta(campeon.getKey()));
+                    String rutaPDF = com.loreruneterra.export.ChampionPDFExporter
+                            .exportar(campeon, carpeta.getAbsolutePath());
+                    Alert ok = new Alert(Alert.AlertType.INFORMATION);
+                    ok.setTitle("PDF exportado");
+                    ok.setHeaderText(null);
+                    ok.setContentText("PDF guardado en:\n" + rutaPDF);
+                    ok.showAndWait();
+                } catch (Exception ex) {
+                    Alert err = new Alert(Alert.AlertType.ERROR);
+                    err.setTitle("Error");
+                    err.setHeaderText(null);
+                    err.setContentText("Error al exportar PDF:\n" + ex.getMessage());
+                    err.showAndWait();
+                }
+            }
+        });
+
+        HBox footer = new HBox(12, exportarBtn, cerrarBtn);
         footer.setAlignment(Pos.CENTER_RIGHT);
         footer.setPadding(new Insets(10, 30, 20, 30));
         root.setBottom(footer);
@@ -515,6 +544,5 @@ public class ChampionBookView {
         ft.setToValue(1.0);
         ft.play();
     }
-
 
 }
