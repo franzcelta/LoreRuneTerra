@@ -685,7 +685,94 @@ public class MainController {
         countLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #555e6e; -fx-font-style: italic;");
 
         card.getChildren().addAll(img, nombre, desc, countLabel);
+        card.setOnMouseClicked(e -> showLugarDetalleScreen(lugar));
+        card.setCursor(javafx.scene.Cursor.HAND);
         return card;
+    }
+
+    private void showLugarDetalleScreen(String[] lugar) {
+        VBox page = new VBox();
+        page.setStyle("-fx-background-color: #0d1624;");
+
+        // ── Top bar ──
+        HBox topBar = new HBox(15);
+        topBar.setPadding(new Insets(14, 20, 14, 20));
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setStyle("-fx-background-color: #0f0f0f;");
+
+        Button btnVolver = new Button("← Regiones");
+        btnVolver.setStyle("-fx-background-color: #2d2d2d; -fx-text-fill: #c8aa6e; " +
+                "-fx-font-size: 14px; -fx-padding: 8 16; -fx-background-radius: 8;");
+        btnVolver.setOnAction(e -> showLugaresScreen());
+
+        Label lblTitulo = new Label(lugar[1]);
+        lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e8d5a3;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        topBar.getChildren().addAll(btnVolver, spacer, lblTitulo);
+
+        // ── Imagen grande ──
+        ImageView imgGrande = loadImage(lugar[3], 900, 320);
+        imgGrande.setStyle("-fx-opacity: 0.85;");
+        StackPane imgContainer = new StackPane(imgGrande);
+        imgContainer.setStyle("-fx-background-color: #060d1a;");
+        imgContainer.setPrefHeight(320);
+
+        // Nombre superpuesto sobre la imagen
+        Label lblNombre = new Label(lugar[1]);
+        lblNombre.setStyle(
+                "-fx-font-size: 48px; -fx-font-weight: bold; " +
+                        "-fx-text-fill: #c8aa6e; " +
+                        "-fx-effect: dropshadow(gaussian, black, 12, 0.8, 0, 0);"
+        );
+        imgContainer.getChildren().add(lblNombre);
+        StackPane.setAlignment(lblNombre, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(lblNombre, new Insets(0, 0, 20, 30));
+
+        // ── Descripción ──
+        VBox descBox = new VBox(8);
+        descBox.setPadding(new Insets(24, 40, 16, 40));
+        Label lblDesc = new Label(lugar[2] != null ? lugar[2] : "Sin descripción disponible.");
+        lblDesc.setStyle("-fx-font-size: 14px; -fx-text-fill: #a09b8c; -fx-wrap-text: true;");
+        lblDesc.setWrapText(true);
+        descBox.getChildren().add(lblDesc);
+
+        // ── Campeones de esta región ──
+        int idLugar = Integer.parseInt(lugar[0]);
+        List<Campeon> campeonesRegion = new ArrayList<>();
+        for (Campeon c : campeonesList) {
+            if (c.getLugarId() == idLugar) campeonesRegion.add(c);
+        }
+
+        Label lblCampeones = new Label(
+                "Campeones de " + lugar[1] + " (" + campeonesRegion.size() + ")"
+        );
+        lblCampeones.setStyle(
+                "-fx-font-size: 18px; -fx-font-weight: bold; " +
+                        "-fx-text-fill: #c8aa6e; -fx-padding: 0 0 0 40;"
+        );
+
+        FlowPane flow = new FlowPane();
+        flow.setHgap(20);
+        flow.setVgap(20);
+        flow.setPadding(new Insets(20, 40, 40, 40));
+        flow.setStyle("-fx-background-color: #0d1624;");
+        renderCards(flow, campeonesRegion);
+
+        VBox contenido = new VBox(0, imgContainer, descBox, lblCampeones, flow);
+        contenido.setStyle("-fx-background-color: #0d1624;");
+
+        ScrollPane scroll = new ScrollPane(contenido);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: #0d1624; -fx-background: #0d1624;");
+        VBox.setVgrow(scroll, Priority.ALWAYS);
+
+        page.getChildren().addAll(topBar, scroll);
+
+        // Animación de entrada
+        fadeIn(page);
+        setCenter(page);
     }
 
     // ══════════════════════════════════════════
