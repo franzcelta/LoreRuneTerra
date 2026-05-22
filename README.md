@@ -11,6 +11,8 @@
 ![Status](https://img.shields.io/badge/Status-En%20desarrollo-yellow)
 ![TFC](https://img.shields.io/badge/TFC-DAM%202024--2026-purple)
 
+![Tests](https://github.com/franzcelta/LoreRuneTerra/actions/workflows/tests.yml/badge.svg)
+
 Trabajo de Fin de Ciclo — Desarrollo de Aplicaciones Multiplataforma (DAM)  
 Autor: Francisco Andrés Manzo Cabrera | Curso 2024–2026
 
