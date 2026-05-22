@@ -1,0 +1,102 @@
+name: Tests LoreRuneTerra
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: loreruneterra
+          POSTGRES_USER: lore_user
+          POSTGRES_PASSWORD: lore_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar JDK 23
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+
+      - name: Crear config.properties
+        run: |
+          mkdir -p src/main/resources
+          cat > src/main/resources/config.properties << EOF
+          db.host=localhost
+          db.port=5432
+          db.name=loreruneterra
+          db.user=lore_user
+          db.password=lore_pass
+          EOF
+
+      - name: Ejecutar DDL
+        run: |
+          PGPASSWORD=lore_pass psql -h localhost -U lore_user -d loreruneterra << 'EOF'
+          CREATE TABLE IF NOT EXISTS lugares (
+              id SERIAL PRIMARY KEY,
+              nombre VARCHAR(100) NOT NULL UNIQUE,
+              descripcion TEXT,
+              imagen_url TEXT
+          );
+          CREATE TABLE IF NOT EXISTS campeones (
+              id SERIAL PRIMARY KEY,
+              key VARCHAR(60) NOT NULL UNIQUE,
+              nombre VARCHAR(100) NOT NULL,
+              titulo VARCHAR(200),
+              clase VARCHAR(50),
+              imagen TEXT,
+              lugar_id INTEGER REFERENCES lugares(id) ON DELETE SET NULL,
+              dificultad INTEGER
+          );
+          CREATE TABLE IF NOT EXISTS biografias (
+              id SERIAL PRIMARY KEY,
+              campeon_id INTEGER NOT NULL REFERENCES campeones(id) ON DELETE CASCADE,
+              biografia_corta TEXT,
+              biografia_completa TEXT,
+              biografia_primera_persona TEXT,
+              ultima_actualizacion DATE
+          );
+          CREATE TABLE IF NOT EXISTS campeones_personalizados (
+              id SERIAL PRIMARY KEY,
+              key VARCHAR(120) NOT NULL UNIQUE,
+              nombre VARCHAR(100) NOT NULL,
+              titulo VARCHAR(200),
+              clase VARCHAR(50),
+              imagen_icono TEXT,
+              imagen_splash TEXT,
+              bio_corta TEXT,
+              bio_completa TEXT,
+              bio_primera TEXT
+          );
+          INSERT INTO lugares (nombre, descripcion) VALUES
+              ('Demacia', 'Reino de orden y justicia'),
+              ('Noxus', 'Imperio de fuerza y conquista'),
+              ('Ionia', 'Tierra de magia y espiritualidad'),
+              ('Freljord', 'Tierras heladas del norte'),
+              ('Shurima', 'Antiguo imperio del desierto'),
+              ('Targon', 'Montaña sagrada de los dioses'),
+              ('Bilgewater', 'Ciudad portuaria de piratas'),
+              ('Piltover', 'Ciudad del progreso y la tecnologia'),
+              ('Zaun', 'Ciudad subterranea de quimicos'),
+              ('Ixtal', 'Jungla arcana del sur')
+          ON CONFLICT (nombre) DO NOTHING;
+          EOF
+
+      - name: Ejecutar tests con Maven
+        run: mvn test -B
