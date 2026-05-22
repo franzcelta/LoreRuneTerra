@@ -111,3 +111,7 @@ db.password=tu_contraseña
 ## Licencia
 
 Proyecto académico — uso educativo. Los datos de campeones pertenecen a Riot Games (DataDragon API).
+
+
+
+
