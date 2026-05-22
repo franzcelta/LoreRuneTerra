@@ -16,6 +16,12 @@
 Trabajo de Fin de Ciclo — Desarrollo de Aplicaciones Multiplataforma (DAM)  
 Autor: Francisco Andrés Manzo Cabrera | Curso 2024–2026
 
+## Descargar
+
+[![Download](https://img.shields.io/badge/Download-v1.0-brightgreen)](https://github.com/franzcelta/LoreRuneTerra/releases/tag/v1.0)
+
+> **Requisitos:** Windows 10/11 + PostgreSQL 18 instalado y configurado.
+
 ---
 
 ## ¿Qué es LoreRuneTerra?
