@@ -70,7 +70,8 @@ jobs:
               biografia_corta TEXT,
               biografia_completa TEXT,
               biografia_primera_persona TEXT,
-              ultima_actualizacion DATE
+              ultima_actualizacion DATE,
+              UNIQUE(campeon_id)
           );
           CREATE TABLE IF NOT EXISTS campeones_personalizados (
               id SERIAL PRIMARY KEY,
@@ -96,6 +97,10 @@ jobs:
               ('Zaun', 'Ciudad subterranea de quimicos'),
               ('Ixtal', 'Jungla arcana del sur')
           ON CONFLICT (nombre) DO NOTHING;
+          INSERT INTO campeones (key, nombre, titulo, clase) VALUES
+              ('Ahri', 'Ahri', 'la Zorra de Nueve Colas', 'Mago'),
+              ('Yasuo', 'Yasuo', 'el Perdonado', 'Luchador')
+          ON CONFLICT (key) DO NOTHING;
           EOF
 
       - name: Ejecutar tests con Maven
