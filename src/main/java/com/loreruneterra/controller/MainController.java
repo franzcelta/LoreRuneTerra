@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import com.loreruneterra.util.SoundManager;
 
 /**
  * Controlador principal de LoreRuneTerra.
@@ -175,6 +176,8 @@ public class MainController {
                 "-fx-background-color: %s; -fx-text-fill: %s; " +
                         "-fx-font-size: 20px; -fx-padding: 18 60; -fx-background-radius: 12; " +
                         "-fx-min-width: 340px;", bgColor, textColor));
+        btn.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
+                e -> SoundManager.play("click.wav"));
         return btn;
     }
 
@@ -1116,6 +1119,8 @@ public class MainController {
         btn.setStyle(String.format(
                 "-fx-background-color: %s; -fx-text-fill: %s; " +
                         "-fx-font-size: 12px; -fx-padding: 4 10; -fx-background-radius: 6;", bg, fg));
+        btn.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
+                e -> SoundManager.play("click.wav"));
         return btn;
     }
 
