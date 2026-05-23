@@ -226,7 +226,7 @@ public class ChampionBookView {
         panel.setMinWidth(440);
 
         // Cargar lista de skins disponibles
-        List<File> skins = cargarSkins(campeon);
+        List<String> skins = cargarSkins(campeon);
 
         ImageView img = new ImageView();
         img.setFitWidth(420);
@@ -244,7 +244,6 @@ public class ChampionBookView {
         // Función para cargar imagen con fade
         Runnable cargarImagen = () -> {
             if (skins.isEmpty()) {
-                // Fallback: icono web de DataDragon
                 String iconUrl = campeon.getImagen();
                 if (iconUrl != null && iconUrl.startsWith("http")) {
                     img.setImage(new Image(iconUrl, true));
@@ -256,7 +255,7 @@ public class ChampionBookView {
             ftOut.setToValue(0.0);
             ftOut.setOnFinished(e -> {
                 try {
-                    img.setImage(new Image(skins.get(idx[0]).toURI().toString()));
+                    img.setImage(new Image(skins.get(idx[0]), true));
                 } catch (Exception ex) {
                     System.err.println("Error cargando skin: " + ex.getMessage());
                 }
@@ -271,7 +270,7 @@ public class ChampionBookView {
         // Cargar imagen inicial sin animación
         if (!skins.isEmpty()) {
             try {
-                img.setImage(new Image(skins.get(0).toURI().toString()));
+                img.setImage(new Image(skins.get(0), true));
             } catch (Exception e) {
                 System.err.println("Error cargando skin inicial: " + e.getMessage());
             }
@@ -288,12 +287,13 @@ public class ChampionBookView {
 
         Runnable actualizarContador = () -> {
             if (!skins.isEmpty()) {
-                String nombre = skins.get(idx[0]).getName()
+                String url = skins.get(idx[0]);
+                String nombre = url.substring(url.lastIndexOf('/') + 1)
                         .replace(".jpg", "").replace(".png", "");
                 lblContador.setText("Skin " + (idx[0] + 1) + " / "
                         + skins.size() + "  —  " + nombre);
             } else {
-                lblContador.setText("Sin skins locales");
+                lblContador.setText("Sin skins disponibles");
             }
         };
         actualizarContador.run();
@@ -334,21 +334,16 @@ public class ChampionBookView {
      * Escanea la carpeta de splasharts y devuelve todos los ficheros
      * que corresponden al campeón (Key_N.jpg), ordenados por nombre.
      */
-    private List<File> cargarSkins(Campeon campeon) {
-        List<File> skins = new ArrayList<>();
+    private List<String> cargarSkins(Campeon campeon) {
+        List<String> urls = new ArrayList<>();
 
         // Campeón personalizado con splashart propio
         if (campeon.getImagenSplash() != null && !campeon.getImagenSplash().isEmpty()) {
-            String clean = campeon.getImagenSplash()
-                    .replace("file:///", "").replace("file://", "");
-            File f = new File(clean);
-            if (f.exists() && f.canRead()) {
-                skins.add(f);
-                return skins;
-            }
+            urls.add(campeon.getImagenSplash());
+            return urls;
         }
 
-        // Escanear carpeta local de skins
+        // Intentar primero carpeta local
         File carpeta = new File(SPLASH_DIR);
         if (carpeta.exists() && carpeta.isDirectory()) {
             File[] archivos = carpeta.listFiles((dir, name) ->
@@ -356,11 +351,17 @@ public class ChampionBookView {
                             (name.endsWith(".jpg") || name.endsWith(".png")));
             if (archivos != null && archivos.length > 0) {
                 Arrays.sort(archivos);
-                skins.addAll(Arrays.asList(archivos));
+                for (File f : archivos) {
+                    urls.add(f.toURI().toString());
+                }
+                return urls;
             }
         }
 
-        return skins;
+        // Fallback: DataDragon — añadir skin_0 siempre, el resto se cargarán on-demand
+        String base = "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/";
+        urls.add(base + campeon.getKey() + "_0.jpg");
+        return urls;
     }
 
     // ══════════════════════════════════════════
@@ -422,16 +423,14 @@ public class ChampionBookView {
         return "Desconocida";
     }
 
-    private void mostrarSplashCompleto(List<File> skins, int idxInicial, Campeon campeon) {
+    private void mostrarSplashCompleto(List<String> skins, int idxInicial, Campeon campeon) {
         Stage modal = new Stage();
         modal.initStyle(javafx.stage.StageStyle.UNDECORATED);
         modal.setMaximized(true);
 
-        // Fondo oscuro semitransparente
         StackPane fondo = new StackPane();
         fondo.setStyle("-fx-background-color: rgba(0,0,0,0.92);");
 
-        // Imagen grande
         ImageView imgGrande = new ImageView();
         imgGrande.setPreserveRatio(true);
         imgGrande.setSmooth(true);
@@ -447,7 +446,7 @@ public class ChampionBookView {
                     ftOut.setFromValue(1.0);
                     ftOut.setToValue(0.0);
                     ftOut.setOnFinished(ev -> {
-                        imgGrande.setImage(new Image(skins.get(idx[0]).toURI().toString()));
+                        imgGrande.setImage(new Image(skins.get(idx[0]), true));
                         FadeTransition ftIn = new FadeTransition(Duration.millis(200), imgGrande);
                         ftIn.setFromValue(0.0);
                         ftIn.setToValue(1.0);
@@ -468,7 +467,7 @@ public class ChampionBookView {
         // Cargar imagen inicial sin animación
         if (!skins.isEmpty()) {
             try {
-                imgGrande.setImage(new Image(skins.get(idx[0]).toURI().toString()));
+                imgGrande.setImage(new Image(skins.get(idx[0]), true));
             } catch (Exception e) {
                 System.err.println("Error: " + e.getMessage());
             }
@@ -479,14 +478,14 @@ public class ChampionBookView {
         lblSkin.setStyle("-fx-font-size: 13px; -fx-text-fill: #c8aa6e; -fx-padding: 8;");
         Runnable actualizarLabel = () -> {
             if (!skins.isEmpty()) {
-                lblSkin.setText(skins.get(idx[0]).getName()
-                        .replace(".jpg","").replace(".png","")
-                        + "  (" + (idx[0]+1) + "/" + skins.size() + ")");
+                String url = skins.get(idx[0]);
+                String nombre = url.substring(url.lastIndexOf('/') + 1)
+                        .replace(".jpg", "").replace(".png", "");
+                lblSkin.setText(nombre + "  (" + (idx[0] + 1) + "/" + skins.size() + ")");
             }
         };
         actualizarLabel.run();
 
-        // Botones ◀ ▶
         String estiloBtn = "-fx-background-color: rgba(200,170,110,0.15); " +
                 "-fx-text-fill: #c8aa6e; -fx-font-size: 28px; " +
                 "-fx-padding: 12 28; -fx-background-radius: 8; -fx-cursor: hand;";
@@ -511,11 +510,9 @@ public class ChampionBookView {
             actualizarLabel.run();
         });
 
-        // Hint de cierre
         Label lblCerrar = new Label("✕  Clic en cualquier lugar para cerrar");
         lblCerrar.setStyle("-fx-font-size: 12px; -fx-text-fill: #555e6e; -fx-padding: 8;");
 
-        // Layout
         HBox controles = new HBox(24, btnAnt, lblSkin, btnSig);
         controles.setAlignment(javafx.geometry.Pos.CENTER);
 
@@ -524,7 +521,6 @@ public class ChampionBookView {
 
         fondo.getChildren().add(centro);
 
-        // Clic en fondo → cerrar con fade
         fondo.setOnMouseClicked(e -> {
             FadeTransition ft = new FadeTransition(Duration.millis(200), fondo);
             ft.setFromValue(1.0);
@@ -536,7 +532,6 @@ public class ChampionBookView {
         Scene scene = new Scene(fondo);
         modal.setScene(scene);
 
-        // FadeIn al abrir
         fondo.setOpacity(0);
         modal.show();
         FadeTransition ft = new FadeTransition(Duration.millis(300), fondo);
