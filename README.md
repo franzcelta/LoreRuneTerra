@@ -152,13 +152,6 @@ CREATE TABLE IF NOT EXISTS campeones_personalizados (
 
 ## Capturas
 
-## Capturas
-
-## Capturas
-
-## Capturas
-
-## Capturas
 
 | Menú principal | Catálogo con filtros |
 |---|---|
