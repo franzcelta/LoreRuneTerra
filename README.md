@@ -152,14 +152,29 @@ CREATE TABLE IF NOT EXISTS campeones_personalizados (
 
 ## Capturas
 
+## Capturas
+
+## Capturas
+
+## Capturas
+
+## Capturas
+
 | Menú principal | Catálogo con filtros |
 |---|---|
-| ![Menu](docs/screen1.png) | ![Catalogo](docs/screen2.png) |
+| ![Menu](docs/screen1.png) | ![Catalogo](docs/screen_catalogodeFiltros.jpg) |
 
-| Dashboard | Libro del campeón |
+| Libro de campeón y Exportar PDF | Sin resultados |
 |---|---|
-| ![Dashboard](docs/screen5.png) | ![Libro](docs/screen3a.png) |
+| ![PDF](docs/screen_export_pdf.jpg) | ![NoResults](docs/screen_noResults.jpg) |
 
+| Vista de Regiones | Detalle de Región |
+|---|---|
+| ![Regiones](docs/screen_regions.jpg) | ![Detalle](docs/screen_region_detalle.jpg) |
+
+| Dashboard | Importación DataDragon |
+|---|---|
+| ![Dashboard](docs/screen_dashboard.jpg) | ![API](docs/screen_API.jpg) |
 ---
 
 ## Licencia
