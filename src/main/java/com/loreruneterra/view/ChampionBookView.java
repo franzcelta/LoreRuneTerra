@@ -250,21 +250,23 @@ public class ChampionBookView {
                 }
                 return;
             }
-            FadeTransition ftOut = new FadeTransition(Duration.millis(200), img);
-            ftOut.setFromValue(1.0);
-            ftOut.setToValue(0.0);
-            ftOut.setOnFinished(e -> {
-                try {
-                    img.setImage(new Image(skins.get(idx[0]), true));
-                } catch (Exception ex) {
-                    System.err.println("Error cargando skin: " + ex.getMessage());
+
+            Image nuevaImagen = new Image(skins.get(idx[0]), true);
+            nuevaImagen.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() == 1.0 && !nuevaImagen.isError()) {
+                    FadeTransition ftOut = new FadeTransition(Duration.millis(150), img);
+                    ftOut.setFromValue(1.0);
+                    ftOut.setToValue(0.0);
+                    ftOut.setOnFinished(e -> {
+                        img.setImage(nuevaImagen);
+                        FadeTransition ftIn = new FadeTransition(Duration.millis(150), img);
+                        ftIn.setFromValue(0.0);
+                        ftIn.setToValue(1.0);
+                        ftIn.play();
+                    });
+                    ftOut.play();
                 }
-                FadeTransition ftIn = new FadeTransition(Duration.millis(200), img);
-                ftIn.setFromValue(0.0);
-                ftIn.setToValue(1.0);
-                ftIn.play();
             });
-            ftOut.play();
         };
 
         // Cargar imagen inicial sin animación
@@ -358,9 +360,13 @@ public class ChampionBookView {
             }
         }
 
-        // Fallback: DataDragon — añadir skin_0 siempre, el resto se cargarán on-demand
-        String base = "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/";
-        urls.add(base + campeon.getKey() + "_0.jpg");
+        // Fallback: consultar DataDragon para skins reales
+        List<String> skinsDragon = obtenerSkinsDataDragon(campeon.getKey());
+        if (!skinsDragon.isEmpty()) return skinsDragon;
+
+        // Último fallback: solo skin 0
+        urls.add("https://ddragon.leagueoflegends.com/cdn/img/champion/splash/"
+                + campeon.getKey() + "_0.jpg");
         return urls;
     }
 
@@ -539,5 +545,43 @@ public class ChampionBookView {
         ft.setToValue(1.0);
         ft.play();
     }
+
+    private List<String> obtenerSkinsDataDragon(String key) {
+        List<String> urls = new ArrayList<>();
+        try {
+            String apiUrl = "https://ddragon.leagueoflegends.com/cdn/16.8.1/data/es_ES/champion/" + key + ".json";
+            java.net.URL url = new java.net.URL(apiUrl);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+
+            if (conn.getResponseCode() == 200) {
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line);
+                reader.close();
+
+                com.google.gson.JsonObject root = com.google.gson.JsonParser
+                        .parseString(sb.toString()).getAsJsonObject();
+                com.google.gson.JsonArray skins = root
+                        .getAsJsonObject("data")
+                        .getAsJsonObject(key)
+                        .getAsJsonArray("skins");
+
+                String base = "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/";
+                for (com.google.gson.JsonElement skin : skins) {
+                    int num = skin.getAsJsonObject().get("num").getAsInt();
+                    urls.add(base + key + "_" + num + ".jpg");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error obteniendo skins de DataDragon: " + e.getMessage());
+        }
+        return urls;
+    }
+
 
 }
