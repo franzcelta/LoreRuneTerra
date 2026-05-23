@@ -16,6 +16,8 @@
 Trabajo de Fin de Ciclo — Desarrollo de Aplicaciones Multiplataforma (DAM)  
 Autor: Francisco Andrés Manzo Cabrera | Curso 2024–2026
 
+---
+
 ## Descargar
 
 [![Download](https://img.shields.io/badge/Download-v1.0-brightgreen)](https://github.com/franzcelta/LoreRuneTerra/releases/tag/v1.0)
@@ -62,10 +64,6 @@ LoreRuneTerra es una aplicación de escritorio Java que permite explorar, gestio
 
 El proyecto sigue el patrón **MVC + DAO**:
 
-## Arquitectura
-
-El proyecto sigue el patrón **MVC + DAO**:
-
     com.loreruneterra/
     ├── controller/     # MainController — navegación, CRUD, animaciones
     ├── db/             # ChampionDAO, CampeonPersonalDAO, PlacesDAO, DatabaseConnector
@@ -77,28 +75,15 @@ El proyecto sigue el patrón **MVC + DAO**:
 
 ---
 
-## Requisitos
+## Instalación y configuración
 
-- Java 23+
-- PostgreSQL 18+
-- Maven 3.9+
+### Opción A — Instalador (recomendado)
 
----
-
-## Configuración
-
-1. Clona el repositorio:
-```bash
-git clone https://github.com/franzcelta/LoreRuneTerra.git
-```
-
-2. Crea la base de datos en PostgreSQL:
-```sql
-CREATE DATABASE loreruneterra;
-```
-
-3. Crea el fichero de configuración en `src/main/resources/config.properties`:
-
+1. Descarga `LoreRuneTerra-1.0.exe` desde [Releases](https://github.com/franzcelta/LoreRuneTerra/releases/tag/v1.0)
+2. Ejecuta el instalador y sigue los pasos
+3. Instala [PostgreSQL 18](https://www.postgresql.org/download/) si no lo tienes
+4. Crea la base de datos y las tablas ejecutando el DDL de la sección inferior
+5. Crea el archivo `config.properties` en `C:\Program Files\LoreRuneTerra\app\`:
 ```properties
 db.host=localhost
 db.port=5432
@@ -106,10 +91,62 @@ db.name=loreruneterra
 db.user=tu_usuario
 db.password=tu_contraseña
 ```
+6. Abre la app y pulsa **Importar DataDragon** para cargar los 172 campeones
 
-4. Ejecuta el DDL de la sección de arquitectura para crear las tablas.
+### Opción B — Desde código fuente
 
-5. Ejecuta desde IntelliJ IDEA con la clase principal `com.loreruneterra.MainApp`.
+1. Clona el repositorio:
+```bash
+git clone https://github.com/franzcelta/LoreRuneTerra.git
+```
+2. Instala PostgreSQL 18 y crea la base de datos `loreruneterra`
+3. Crea `src/main/resources/config.properties` con tus credenciales
+4. Ejecuta el DDL de abajo para crear las tablas
+5. Ejecuta desde IntelliJ IDEA con la clase principal `com.loreruneterra.MainApp`
+
+---
+
+## DDL — Crear tablas
+
+```sql
+CREATE TABLE IF NOT EXISTS lugares (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+    imagen_url TEXT
+);
+CREATE TABLE IF NOT EXISTS campeones (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(60) NOT NULL UNIQUE,
+    nombre VARCHAR(100) NOT NULL,
+    titulo VARCHAR(200),
+    clase VARCHAR(50),
+    imagen TEXT,
+    lugar_id INTEGER REFERENCES lugares(id) ON DELETE SET NULL,
+    dificultad INTEGER
+);
+CREATE TABLE IF NOT EXISTS biografias (
+    id SERIAL PRIMARY KEY,
+    campeon_id INTEGER NOT NULL REFERENCES campeones(id) ON DELETE CASCADE,
+    biografia_corta TEXT,
+    biografia_completa TEXT,
+    biografia_primera_persona TEXT,
+    ultima_actualizacion DATE,
+    UNIQUE(campeon_id)
+);
+CREATE TABLE IF NOT EXISTS campeones_personalizados (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(120) NOT NULL UNIQUE,
+    nombre VARCHAR(100) NOT NULL,
+    titulo VARCHAR(200),
+    clase VARCHAR(50),
+    imagen_icono TEXT,
+    imagen_splash TEXT,
+    bio_corta TEXT,
+    bio_completa TEXT,
+    bio_primera TEXT
+);
+```
 
 ---
 
