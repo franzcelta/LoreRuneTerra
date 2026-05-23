@@ -170,6 +170,19 @@ CREATE TABLE IF NOT EXISTS campeones_personalizados (
 | ![Dashboard](docs/screen_dashboard.jpg) | ![API](docs/screen_API.jpg) |
 ---
 
+---
+## Conocimientos aplicados
+
+Este proyecto fue desarrollado como Trabajo de Fin de Ciclo del Grado Superior en DAM.
+A lo largo del desarrollo apliqué y consolidé los siguientes conocimientos:
+
+- **Patrones de diseño** — MVC, DAO y Singleton implementados desde cero
+- **Concurrencia en JavaFX** — hilo separado para importación con Platform.runLater()
+- **Integración de API REST** — consumo de DataDragon con HttpURLConnection y Gson
+- **Testing** — 23 tests de integración con JUnit 5 y CI/CD con GitHub Actions
+- **JavaFX sin FXML** — interfaz construida completamente de forma programática
+- **PostgreSQL avanzado** — transacciones JDBC, FK CASCADE, ILIKE, upsert ON CONFLICT
+
 ## Licencia
 
 Proyecto académico — uso educativo. Los datos de campeones pertenecen a Riot Games (DataDragon API).
